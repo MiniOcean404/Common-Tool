@@ -314,3 +314,18 @@ a:active {
 .round {
   border-radius: 100%;
 }
+
+/*滚动条样式*/
+*::-webkit-scrollbar {
+  width: 0.5em;
+  height: 0.5em;
+}
+
+*::-webkit-scrollbar-track {
+  background-color: #eee;
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 50px;
+  background-color: rgba(0, 0, 0, .3);
+}
