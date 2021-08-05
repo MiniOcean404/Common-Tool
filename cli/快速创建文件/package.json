@@ -1,0 +1,14 @@
+{
+  "name": "cli",
+  "version": "1.0.0",
+  "description": "",
+  "main": "plopfile.js",
+  "scripts": {
+    "create-components": "plop"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "plop": "^2.7.4"
+  }
+}
