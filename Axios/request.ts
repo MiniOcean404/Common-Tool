@@ -7,6 +7,7 @@ import Qs from 'qs'
 export const UserAgent =
 	'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36'
 export const ContentType = 'application/x-www-form-urlencoded'
+const http = window.require('axios/lib/adapters/http.js')
 
 export const request = axios.create({
 	baseURL: '',
@@ -19,31 +20,34 @@ export const request = axios.create({
 	// 最多转发数，用于node.js
 	maxRedirects: 5,
 	// 最大响应数据大小
-	maxContentLength: 2000,
+	maxContentLength: 200000,
 	headers: {
 		'Content-Type': 'application/json;charset=UTF-8'
 	},
 
 	// 查询对象序列化函数
-	paramsSerializer: function(params: any) {
+	paramsSerializer: function (params: any) {
 		return Qs.stringify(params, { arrayFormat: 'brackets' })
 	},
 
 	// 请求后的数据处理
 	transformResponse: [
-		function(data: AxiosResponse) {
+		function (data: AxiosResponse) {
 			return data
 		}
 	],
 
 	// 自定义错误状态码范围
-	validateStatus: function(status: number) {
+	validateStatus: function (status: number) {
 		return status >= 200 && status < 400
 	},
 
-	// 用于node.js
+	// xhr请求中用于node.js
 	httpAgent: new http.Agent({ keepAlive: true }),
 	httpsAgent: new https.Agent({ keepAlive: true })
+
+
+	// adapter: http
 
 	// proxy: {
 	// 	host: '127.0.0.1',
@@ -69,6 +73,7 @@ request.interceptors.response.use(
 		removePendingRequest(res.config) // 从pendingRequest对象中移除请求
 		return res
 	},
+
 	(err: any) => {
 		removePendingRequest(err.config || {}) // 从pendingRequest对象中移除请求
 		if (axios.isCancel(err)) {
