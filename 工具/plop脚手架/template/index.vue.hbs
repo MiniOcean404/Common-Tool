@@ -1,0 +1,126 @@
+{{!-- ./plop-templates/component.vue.hbs --}}
+
+<template>
+  <div class="{{ dashCase name }}">
+    <Input :queryData="queryData">
+      <template v-slot:up="{ queryData }">
+        <div class="query_title">查询条件</div>
+        <el-form label-width="120px" :model="queryData" label-position="right" :inline="true">
+          <el-form-item label="姓名">
+            <el-input clearable v-model="queryData.productName" placeholder="请输入内容"></el-input>
+          </el-form-item>
+
+          <el-form-item label="手机号">
+            <el-input clearable style="width: 200px" v-model="queryData.phone" placeholder="请输入内容"></el-input>
+          </el-form-item>
+
+          <el-form-item label="在职状态">
+            <el-select clearable v-model="queryData.supplierCode" placeholder="请选择内容" filterable>
+              <el-option
+                  v-for="item in insuranceCompanyList"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </template>
+
+      <!--按钮-->
+      <template v-slot:button>
+        <div class="query-button">
+          <el-button type="primary" @click="queryButton" size="mini">查询</el-button>
+        </div>
+      </template>
+    </Input>
+
+    <Table :tableData="tableData" @cell-click="operateHandle"></Table>
+
+    <Pagination @currentPageChange="currentPageChange" :pageOption="pageOption"></Pagination>
+  </div>
+</template>
+
+<script>
+  // * 导入混入
+  import { tableMixin } from 'common/MixinUtils'
+
+  // * 公共api
+  import { download } from 'api/common'
+  import { getChannelShow, getPeople, getProduct, getTeam } from 'api/BusinessStatisticsApi/BusinessStatisticsApi'
+
+  // * 公共工具函数
+  // import {filterHandle} from "@/common/utils";
+  // * 导入字典
+  import { Model } from './dictionarie'
+  import { companyList, insuranceCompanyList, riskType, teamList } from 'common/dictionarieList/common'
+
+  export default {
+    name: '{{ properCase name }}',
+    mixins: [tableMixin],
+    data: function () {
+      return {
+        //todo 字典
+        Model,
+        companyList,
+        insuranceCompanyList,
+        riskType,
+        teamList,
+
+        //todo 表格展示数据
+        tableData: {
+          resultData: [],
+          needData: [
+            // 表格展示属性:列名、长度、颜色、是否需要点击事件、是否需要操作列
+            ['productName', '姓名', '', '', false, false],
+            ['supplierName', '手机号', '', false, false],
+            ['productTypeName', '销售人员编码', '', false, false],
+            ['premium', '入司时间', '', false, false],
+            ['count', '是否导师', '', false, false],
+            ['count', '导师姓名', '', false, false],
+            ['count', '导师手机号', '', false, false],
+            ['count', '团队名称', '', false, false],
+            ['count', '是否讲师', '', false, false],
+            ['count', '讲师姓名', '', false, false],
+            ['count', '讲师手机号', '', false, false],
+            ['', '操作', '', '#409EFF', true, true, '修改'],
+          ],
+        },
+      }
+    },
+    created() {
+      this.dataInit()
+      this.requestConfig()
+    },
+    methods: {
+      // * 公司列表初始化
+      dataInit() {
+        this.getSelectList(companyInfo, companyList, 'channelCompanyCode', 'channelCompanyName')
+        this.getSelectList(selectCompanyInfo, insuranceCompanyList, 'codeValue', 'codeName')
+        this.getSelectList(selectRiskTypeInfo, riskType, 'codeValue', 'codeName')
+        this.getSelectList(groupSelectInfo, teamList, 'channelGroupCode', 'channelGroupName')
+      },
+      // * 操作列方法
+      operateHandle(rows) {
+
+      },
+
+      // *----------------------------------处理页码，过滤函数
+      // * 当前表格请求配置(查询，翻页调用)
+      requestConfig(current) {
+        const defaultDate = [
+          {
+            data: ['dateStart', 'dateEnd'],
+          },
+        ]
+
+        //api、查询表格、页、表格数据、当前页、时间数组，过滤函数
+        this.getList(getProduct, this.queryData, this.pageOption, this.tableData, current, defaultDate)
+      },
+    },
+  }
+</script>
+
+<style lang="scss">
+  @import "./index.scss";
+</style>
