@@ -1,13 +1,13 @@
 // camelCase: changeFormatToThis
 // snakeCase: change_format_to_this
-// dashCase/kebabCase: change-format-to-this
 // dotCase: change.format.to.this
 // pathCase: change/format/to/this
-// properCase/pascalCase: ChangeFormatToThis
-// lowerCase: change format to this
 // sentenceCase: Change format to this,
 // constantCase: CHANGE_FORMAT_TO_THIS
 // titleCase: Change Format To This
+// lowerCase: aaa
+// properCase/pascalCase: Aaa
+// dashCase/kebabCase: A-aa
 
 // 运行命令：plop
 
@@ -50,7 +50,6 @@ module.exports = (plop) => {
                 // 模板文件地址
                 templateFile: 'templates/index.vue.hbs',
                 data: {
-                    // 传递的数据给模板文件
                     name: name,
                 },
             })
@@ -60,7 +59,6 @@ module.exports = (plop) => {
                 path: `src/views/${merge}/index.scss`,
                 templateFile: 'templates/index.scss.hbs',
                 data: {
-                    // 传递的数据给模板文件
                     name: name,
                 },
             })
@@ -80,7 +78,6 @@ module.exports = (plop) => {
                 path: `src/views/${merge}/index.js`,
                 templateFile: 'templates/router.js.hbs',
                 data: {
-                    // 传递的数据给模板文件
                     name: name,
                 },
             })

@@ -2,14 +2,16 @@ const { Client } = require('ssh2')
 const chalk = require('chalk')
 const config = require('./config')
 const fs = require('fs')
-const path = require('path')
 const compressing = require('compressing')
 const shell = require('shelljs')
+const dayjs = require('dayjs')
 
 // const params = { file: `./dist.zip`, target: `${servicePath}/dist.zip` }
 
 const currentEnv = process.argv[2]
 const currentConfig = config[currentEnv]
+const zipName = (() => `manager-view.zip`)()
+const today = dayjs().format('YYYYMMDD')
 
 // * 打包
 const compileDist = async () => {
@@ -24,12 +26,10 @@ const compileDist = async () => {
 
 // * 压缩代码
 function compress() {
-	const zipName = (() => `manager-view.zip`)()
-
 	compressing.zip
 		.compressDir('./dist/.', `./ssh2/${zipName}`)
 		.then(() => {
-			chalk.yellow(`Tip: 文件压缩成功，已压缩至【ssh2/${zipName}】`)
+			console.log(chalk.yellow(`Tip: 文件压缩成功，已压缩至【ssh2/${zipName}】`))
 			// 连接函数
 			// conFun()
 		})
@@ -74,34 +74,66 @@ function upLoadFile(conn) {
 
 	conn.sftp(function (err, sftp) {
 		if (err) throw err
-		sftp.fastPut(file, target, {}, function (err, result) {
+
+		sftp.readdir(target, async (err, list) => {
 			if (err) throw err
-			compress()
-			Shell(conn)
+
+			const isHaveDir = list.some((i) => {
+				return i.filename === today
+			})
+
+			if (isHaveDir) {
+				up(sftp, conn)
+			} else {
+				await Shell(conn)
+				up()
+			}
+
+			conn.end()
 		})
+	})
+}
+
+// * 上传文件
+function up(sftp, conn) {
+	sftp.fastPut(file, target, {}, function (err, result) {
+		if (err) throw err
+
+		console.log(chalk.yellow('发布完成！！'))
+		fs.unlinkSync(`./${zipName}`)
+		conn.end()
 	})
 }
 
 // * 执行Shell
 function Shell(conn) {
-	const comment = [`cd ${currentConfig.path}`, 'unzip -o dist.zip', 'rm -f dist.zip', 'exit', 'close']
+	const comment = [
+		`cd ${currentConfig.path}`,
+		`mkdir ${today}`,
+		`cd ${today}`,
+		// 'unzip -o dist.zip',
+		// 'rm -f dist.zip',
+		'exit',
+		'close',
+	]
 
-	conn.shell(function (err, stream) {
-		if (err) throw err
-		stream
-			.on('close', function () {
-				console.log(chalk.yellow('发布完成！！'))
-				// 删除压缩包
-				fs.unlinkSync('./dist.zip')
-				conn.end()
-			})
-			.on('data', function (data) {
-				console.log('标准输出: ' + data)
-			})
-		stream.end(comment.join('\n'))
+	return new Promise((resolve, reject) => {
+		conn.shell(function (err, stream) {
+			if (err) throw err
+			stream
+				.on('close', function () {
+					console.log(chalk.yellow('创建今天日期文件完成！！'))
+					resolve(true)
+				})
+				.on('data', function (data) {
+					console.log('标准输出: ' + data)
+				})
+			stream.end(comment.join('\n'))
+		})
 	})
 }
 
 ;(async () => {
-	await compileDist()
+	// await compileDist()
+	conFun()
 })()
