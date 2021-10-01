@@ -1,17 +1,17 @@
 const { Client } = require('ssh2')
 const chalk = require('chalk')
-const config = require('./config')
 const fs = require('fs')
 const compressing = require('compressing')
 const shell = require('shelljs')
 const dayjs = require('dayjs')
-
-// const params = { file: `./dist.zip`, target: `${servicePath}/dist.zip` }
+const config = require('./config')
 
 const currentEnv = process.argv[2]
 const currentConfig = config[currentEnv]
-const zipName = (() => `manager-view.zip`)()
 const today = dayjs().format('YYYYMMDD')
+
+const file = currentConfig.localPackage
+const netPath = currentConfig.path
 
 // * 打包
 const compileDist = async () => {
@@ -27,9 +27,9 @@ const compileDist = async () => {
 // * 压缩代码
 function compress() {
 	compressing.zip
-		.compressDir('./dist/.', `./ssh2/${zipName}`)
+		.compressDir('./dist/.', `./ssh2/${config.zipName}`)
 		.then(() => {
-			console.log(chalk.yellow(`Tip: 文件压缩成功，已压缩至【ssh2/${zipName}】`))
+			console.log(chalk.yellow(`Tip: 文件压缩成功，已压缩至【ssh2/${config.zipName}】`))
 			// 连接函数
 			// conFun()
 		})
@@ -64,9 +64,6 @@ function conFun() {
 
 // * 上传函数
 function upLoadFile(conn) {
-	const file = currentConfig.localPackage
-	const target = currentConfig.path
-
 	if (!conn) {
 		console.log(chalk.red('没有连接对象'))
 		return
@@ -75,19 +72,18 @@ function upLoadFile(conn) {
 	conn.sftp(function (err, sftp) {
 		if (err) throw err
 
-		sftp.readdir(target, async (err, list) => {
+		sftp.readdir(netPath, async (err, list) => {
 			if (err) throw err
 
 			const isHaveDir = list.some((i) => {
 				return i.filename === today
 			})
 
-			if (isHaveDir) {
-				up(sftp, conn)
-			} else {
+			if (!isHaveDir) {
 				await Shell(conn)
-				up()
 			}
+
+			up(sftp, conn)
 
 			conn.end()
 		})
@@ -96,11 +92,14 @@ function upLoadFile(conn) {
 
 // * 上传文件
 function up(sftp, conn) {
-	sftp.fastPut(file, target, {}, function (err, result) {
+	const local = file
+	const target = `${netPath}/${today}/${config.zipName}`
+
+	sftp.fastPut(local, target, {}, function (err, result) {
 		if (err) throw err
 
 		console.log(chalk.yellow('发布完成！！'))
-		fs.unlinkSync(`./${zipName}`)
+		fs.unlinkSync(`./${config.zipName}`)
 		conn.end()
 	})
 }

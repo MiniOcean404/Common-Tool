@@ -1,5 +1,9 @@
 const path = require('path')
 
+const zipName = (() => `manager-view.zip`)()
+
+exports.zipName = zipName
+
 exports.prd = {
 	ip: '10.10.200.212', // ssh地址
 	username: 'root', // ssh 用户名
@@ -7,6 +11,6 @@ exports.prd = {
 	password: 'bhfae.com', // ssh 密码
 	// path: '/app/production_file/', // 操作开始文件夹 可以直接指向配置好的地址
 	path: '/app/production_file', // 操作开始文件夹 可以直接指向配置好的地址
-	localPackage: path.resolve(__dirname, 'manager-view.zip'),
+	localPackage: path.resolve(__dirname, zipName),
 	removePath: '/data/h5/admin/dist', // 需要删除的文件夹
 }
