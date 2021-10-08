@@ -3,7 +3,7 @@ const { Client } = require('ssh2')
 const fs = require('fs')
 
 // * 连接函数
-function conFun(currentConfig) {
+function connFun(currentConfig) {
 	return new Promise((resolve, reject) => {
 		console.log(chalk.yellow('开始连接...\r\n'))
 
@@ -87,7 +87,7 @@ function Shell(conn, commandList) {
 }
 
 module.exports = {
-	conFun,
+	connFun,
 	getSftp,
 	Shell,
 	up,
