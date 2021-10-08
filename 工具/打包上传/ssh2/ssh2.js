@@ -11,7 +11,7 @@ const today = dayjs().format('YYYYMMDD');
 
 const compressFile = currentConfig.compressPath;
 const buildPath = currentConfig.buildPath;
-const netPath = currentConfig.path;
+const netPath = currentConfig.netPath;
 
 (async () => {
 	// * 打包压缩
