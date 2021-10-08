@@ -32,12 +32,13 @@ function connFun(currentConfig) {
 function getSftp(conn) {
 	return new Promise((resolve, reject) => {
 		if (!conn) {
-			console.log(chalk.red('没有连接对象'))
+			console.log(chalk.red('没有sftp连接对象'))
 			return
 		}
 
 		conn.sftp(function (err, sftp) {
 			if (err) reject(err)
+			console.log(chalk.yellow('连接SFTP成功...\r\n'))
 			resolve(sftp)
 		})
 	})
@@ -53,16 +54,12 @@ function getDir(sftp, conn, netPath) {
 }
 
 // * 上传文件
-function up(sftp, file, netPath, today, config) {
+function up(sftp, localPath, target) {
 	return new Promise((resolve, reject) => {
-		const local = file
-		const target = `${netPath}/${today}/${config.zipName}`
-
-		sftp.fastPut(local, target, {}, function (err, result) {
+		sftp.fastPut(localPath, target, {}, function (err, result) {
 			if (err) throw err
 
-			console.log(chalk.yellow('发布完成！！'))
-			fs.unlinkSync(`./${config.zipName}`)
+			console.log(chalk.yellow('上传完成！！'))
 			resolve(true)
 		})
 	})
@@ -79,7 +76,7 @@ function Shell(conn, commandList) {
 					resolve(true)
 				})
 				.on('data', function (data) {
-					console.log('标准输出: ' + data)
+					console.log(chalk.blue('标准输出: ' + data))
 				})
 			stream.end(commandList.join('\n'))
 		})
