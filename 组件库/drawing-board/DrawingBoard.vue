@@ -146,13 +146,17 @@ export default {
 		LeaveScreenCanvas(point1, point2) {
 			const leaveScreen = new LeaveScreenRender();
 			leaveScreen.create(this.width, this.height);
-			leaveScreen.draw(draw, {
-				point1,
-				point2,
-				state: this.state,
-				eraserConfig: this.eraserConfig,
-				pencilConfig: this.pencilConfig,
-			}); // 绘制路径
+			leaveScreen.draw(
+				draw,
+				{
+					point1,
+					point2,
+					state: this.state,
+					eraserConfig: this.eraserConfig,
+					pencilConfig: this.pencilConfig,
+				},
+				this.ctx,
+			); // 绘制路径
 			leaveScreen.render(this.ctx);
 		},
 
@@ -202,6 +206,7 @@ export default {
 				case 'blob':
 					this.canvas.toBlob(
 						(blob) => {
+							console.log(blob);
 							this.$emit('getImg', blob);
 						},
 						'image/png',

@@ -1,4 +1,4 @@
-export function draw(drawConfig) {
+export function draw(drawConfig, a) {
 	const {
 		point1,
 		point2,
@@ -16,8 +16,13 @@ export function draw(drawConfig) {
 
 	// 每次触摸开始，开启新的路径,（清除后上次的东西就不存在了，否则还存在）
 	this.beginPath();
-	this.moveTo(point1.X, point1.Y);
-	this.lineTo(point2.X, point2.Y);
+
+	if (state) {
+		this.moveTo(point1.X, point1.Y);
+		this.lineTo(point2.X, point2.Y);
+	} else {
+		a.clearRect(point1.X, point1.Y, 20, 20);
+	}
 	this.stroke();
 
 	this.restore();
