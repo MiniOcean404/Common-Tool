@@ -60,7 +60,7 @@
 <script>
 import LeaveScreenRender from './LeaveScreenRender';
 import DrawingBoardProp from './DrawingBoardProp';
-import { draw, getOpacityPercentage } from './draw';
+import { draw, getOpacityPercentage, clear } from './draw';
 
 export default {
 	name: 'DrawingBoard',
@@ -145,19 +145,21 @@ export default {
 		},
 		LeaveScreenCanvas(point1, point2) {
 			const leaveScreen = new LeaveScreenRender();
-			leaveScreen.create(this.width, this.height);
-			leaveScreen.draw(
-				draw,
-				{
+			leaveScreen.create(this.width, this.height, this.ctx);
+
+			if (this.state) {
+				leaveScreen.draw(draw, {
 					point1,
 					point2,
-					state: this.state,
-					eraserConfig: this.eraserConfig,
 					pencilConfig: this.pencilConfig,
-				},
-				this.ctx,
-			); // 绘制路径
-			leaveScreen.render(this.ctx);
+				}); // 绘制路径
+				leaveScreen.render();
+			} else {
+				leaveScreen.clear(clear, {
+					point1,
+					point2,
+				});
+			}
 		},
 
 		// * 切换

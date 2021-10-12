@@ -1,14 +1,12 @@
-export function draw(drawConfig, a) {
+export function draw(drawConfig) {
 	const {
 		point1,
 		point2,
-		state,
 		pencilConfig: { color: PColor, size: PSize },
-		eraserConfig: { color: EColor, size: ESize },
 	} = drawConfig;
 
-	this.lineWidth = state ? PSize : ESize;
-	this.strokeStyle = state ? PColor : EColor;
+	this.lineWidth = PSize;
+	this.strokeStyle = PColor;
 	this.lineCap = 'round';
 	this.lineJoin = 'round';
 
@@ -17,15 +15,19 @@ export function draw(drawConfig, a) {
 	// 每次触摸开始，开启新的路径,（清除后上次的东西就不存在了，否则还存在）
 	this.beginPath();
 
-	if (state) {
-		this.moveTo(point1.X, point1.Y);
-		this.lineTo(point2.X, point2.Y);
-	} else {
-		a.clearRect(point1.X, point1.Y, 20, 20);
-	}
+	this.moveTo(point1.X, point1.Y);
+	this.lineTo(point2.X, point2.Y);
 	this.stroke();
 
 	this.restore();
+}
+
+export function clear(drawConfig) {
+	const { point1, point2 } = drawConfig;
+	const X = (point1.X + point2.X) / 2;
+	const Y = (point1.Y + point2.Y) / 2;
+
+	this.clearRect(X, Y, 20, 20);
 }
 
 /**
