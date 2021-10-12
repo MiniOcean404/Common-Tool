@@ -198,24 +198,22 @@ export default {
 				return;
 			}
 
-			let value;
 			switch (this.imgType) {
 				case 'blob':
 					this.canvas.toBlob(
 						(blob) => {
-							value = blob;
+							this.$emit('getImg', blob);
 						},
 						'image/png',
 						0.95,
 					);
 					break;
 				case 'base64':
-					value = this.canvas.toDataURL('image/png');
+					this.$emit('getImg', this.canvas.toDataURL('image/png'));
 					break;
 				default:
 					break;
 			}
-			this.$emit('getImg', value);
 		},
 	},
 };
