@@ -12,12 +12,8 @@
 				<div @click="palette" class="pencil-color" :style="pencilStyle"></div>
 
 				<div class="operate" v-show="currentShow === '操作'">
-					<div @click="pencil" class="board-button">
-						<slot name="pencil">铅笔</slot>
-					</div>
-
-					<div @click="eraser" v-bind:state="state" class="board-button">
-						<slot name="eraser">橡皮擦</slot>
+					<div @click="PencilAndEraser" class="board-button">
+						<slot name="pencil">{{ state }}</slot>
 					</div>
 
 					<div @click="revoke" class="board-button">
@@ -59,8 +55,9 @@
 
 <script>
 import LeaveScreenRender from './LeaveScreenRender';
+import ShowCanvas from './ShowCanvas';
 import DrawingBoardProp from './DrawingBoardProp';
-import { draw, getOpacityPercentage, clear } from './draw';
+import { draw, getOpacityPercentage, clear } from './utils';
 
 export default {
 	name: 'DrawingBoard',
@@ -68,9 +65,11 @@ export default {
 	data() {
 		return {
 			// 绘图图像
-			ctx: '',
-			canvas: '',
-			state: true,
+			state: '橡皮擦',
+			// 展示canvas
+			showCanvasObj: null,
+			// 离屏渲染
+			leaveScreen: null,
 			// 路径点集合
 			points: [],
 			preImg: [], // 撤销功能保存之前的图信息
@@ -96,18 +95,19 @@ export default {
 	},
 	methods: {
 		createCanvas() {
-			const canvas = (this.canvas = document.createElement('canvas'));
+			// 初始化展示canvas
+			this.showCanvasObj = new ShowCanvas(this.width, this.height);
 			const DrawingBoard = document.querySelector('.DrawingBoard');
 			const leftRightMargin = document.querySelector('.left-right-margin');
-			DrawingBoard.appendChild(canvas);
-			this.ctx = canvas.getContext('2d');
-
-			canvas.height = this.height;
-			canvas.width = this.width;
+			DrawingBoard.appendChild(ShowCanvas.canvas);
 
 			// 计算画在canvas中的偏移
 			this.margin.left = leftRightMargin.offsetLeft;
 			this.margin.top = leftRightMargin.offsetTop;
+
+			// 初始化离屏渲染
+			this.leaveScreen = new LeaveScreenRender(this.width, this.height, ShowCanvas.onlineCtx);
+			this.leaveScreen.create(this.pencilConfig);
 		},
 		touchstart(e) {
 			// 防止微信屏幕滚动，展示由xx提供
@@ -116,7 +116,7 @@ export default {
 			});
 
 			// 保存每次画后的图
-			this.preImg.push(this.ctx.getImageData(0, 0, this.width, this.height));
+			this.preImg.push(ShowCanvas.onlineCtx.getImageData(0, 0, this.width, this.height));
 
 			const startX = e.changedTouches[0].clientX - this.margin.left;
 			const startY = e.changedTouches[0].clientY - this.margin.top;
@@ -135,7 +135,6 @@ export default {
 				this.points.shift();
 
 				this.LeaveScreenCanvas(point1, point2);
-
 				// this.eraser()
 			}
 		},
@@ -144,21 +143,19 @@ export default {
 			document.body.removeEventListener('touchmove', this.stopTouchScroll);
 		},
 		LeaveScreenCanvas(point1, point2) {
-			const leaveScreen = new LeaveScreenRender();
-			leaveScreen.create(this.width, this.height, this.ctx);
-
-			if (this.state) {
-				leaveScreen.draw(draw, {
+			if (this.state === '橡皮擦') {
+				ShowCanvas.onlineCtx.globalCompositeOperation = 'source-over';
+				this.leaveScreen.draw(draw, {
 					point1,
 					point2,
-					pencilConfig: this.pencilConfig,
 				}); // 绘制路径
-				leaveScreen.render();
-			} else {
-				leaveScreen.clear(clear, {
+				this.leaveScreen.render(ShowCanvas.onlineCtx);
+			} else if (this.state === '铅笔') {
+				this.showCanvasObj.clear(clear, {
 					point1,
 					point2,
-				});
+				}); // 绘制路径
+				this.leaveScreen.renderLeave(ShowCanvas.canvas);
 			}
 		},
 
@@ -177,28 +174,36 @@ export default {
 				default:
 					break;
 			}
+			// 设置画笔颜色大小属性
+			this.leaveScreen.create(this.pencilConfig);
+
+			// 改变当前状态
 			this.currentShow = '操作';
-			this.state = true;
+			this.state = '橡皮擦';
 		},
 		// * 功能
-		pencil() {
-			this.state = true;
-		},
-		eraser() {
-			this.state = false;
+		PencilAndEraser() {
+			if (this.state === '铅笔') {
+				this.leaveScreen.create(this.pencilConfig);
+				this.state = '橡皮擦';
+			} else {
+				this.showCanvasObj.create();
+				this.state = '铅笔';
+			}
 		},
 		// 撤销功能
 		revoke() {
 			if (this.preImg.length <= 0) return;
-			this.ctx.putImageData(this.preImg[this.preImg.length - 1], 0, 0);
+			ShowCanvas.onlineCtx.putImageData(this.preImg[this.preImg.length - 1], 0, 0);
 			this.preImg.pop();
 		},
 		clearBoard() {
-			this.ctx.clearRect(0, 0, this.width, this.height);
+			ShowCanvas.onlineCtx.clearRect(0, 0, this.width, this.height);
 			this.preImg = [];
 		},
 		complete() {
-			const isAbsolutelyOpacity = getOpacityPercentage(this.ctx, this.width, this.height) === 1;
+			const isAbsolutelyOpacity =
+				getOpacityPercentage(ShowCanvas.onlineCtx, this.width, this.height) === 1;
 			if (isAbsolutelyOpacity) {
 				this.$emit('getImg', null);
 				return;
@@ -206,7 +211,7 @@ export default {
 
 			switch (this.imgType) {
 				case 'blob':
-					this.canvas.toBlob(
+					ShowCanvas.canvas.toBlob(
 						(blob) => {
 							console.log(blob);
 							this.$emit('getImg', blob);
@@ -216,7 +221,7 @@ export default {
 					);
 					break;
 				case 'base64':
-					this.$emit('getImg', this.canvas.toDataURL('image/png'));
+					this.$emit('getImg', ShowCanvas.canvas.toDataURL('image/png'));
 					break;
 				default:
 					break;
