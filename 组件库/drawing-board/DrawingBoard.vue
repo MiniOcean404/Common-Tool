@@ -56,6 +56,7 @@
 <script>
 import LeaveScreenRender from './LeaveScreenRender';
 import ShowCanvas from './ShowCanvas';
+
 import DrawingBoardProp from './DrawingBoardProp';
 import { draw, getOpacityPercentage, clear } from './utils';
 
@@ -219,23 +220,27 @@ export default {
 				return;
 			}
 
-			switch (this.imgType) {
-				case 'blob':
-					ShowCanvas.canvas.toBlob(
-						(blob) => {
-							console.log(blob);
-							this.$emit('getImg', blob);
-						},
-						'image/png',
-						0.95,
-					);
-					break;
-				case 'base64':
-					this.$emit('getImg', ShowCanvas.canvas.toDataURL('image/png'));
-					break;
-				default:
-					break;
-			}
+			const angle = this.orientation === '横' ? -90 : 0;
+			ShowCanvas.canvas.toBlob(
+				(blob) => {
+					this.leaveScreen.rotateImg(URL.createObjectURL(blob), angle, (canvas) => {
+						switch (this.imgType) {
+							case 'blob':
+								canvas.toBlob((b) => {
+									this.$emit('getImg', b, 'image/png', 0.95);
+								});
+								break;
+							case 'base64':
+								this.$emit('getImg', canvas.toDataURL('image/png'));
+								break;
+							default:
+								break;
+						}
+					});
+				},
+				'image/png',
+				0.95,
+			);
 		},
 	},
 };

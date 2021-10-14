@@ -1,4 +1,8 @@
 export default {
+	orientation: {
+		type: String,
+		default: '竖',
+	},
 	width: {
 		type: Number,
 		default: Number(document.body.clientWidth) - 44,
