@@ -18,8 +18,4 @@ export default class ShowCanvas {
     ShowCanvas.onlineCtx.lineCap = 'round'; // 设置线条两端为圆弧
     ShowCanvas.onlineCtx.lineJoin = 'round'; // 设置线条转折为圆弧
   }
-
-  clear(fn, ...args){
-    fn.call(ShowCanvas.onlineCtx, ...args)
-  }
 }

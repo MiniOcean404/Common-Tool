@@ -93,6 +93,31 @@ export default {
 	mounted() {
 		this.createCanvas();
 	},
+	watch: {
+		state(val) {
+			if (val === '铅笔') {
+				this.pencilConfig.size = 32;
+				this.pencilConfig.compositeOperation = 'destination-out';
+				this.leaveScreen.create(this.pencilConfig);
+			} else {
+				this.pencilConfig.compositeOperation = 'source-over';
+				this.pencilConfig.size = 4;
+				this.leaveScreen.create(this.pencilConfig);
+			}
+		},
+		pencilConfig: {
+			handler() {
+				if (this.state !== '铅笔') {
+					// 设置画笔颜色大小属性
+					this.leaveScreen.create(this.pencilConfig);
+					this.state = '橡皮擦';
+				}
+				// 改变当前状态
+				this.currentShow = '操作';
+			},
+			deep: true,
+		},
+	},
 	methods: {
 		createCanvas() {
 			// 初始化展示canvas
@@ -106,7 +131,7 @@ export default {
 			this.margin.top = leftRightMargin.offsetTop;
 
 			// 初始化离屏渲染
-			this.leaveScreen = new LeaveScreenRender(this.width, this.height, ShowCanvas.onlineCtx);
+			this.leaveScreen = new LeaveScreenRender(this.width, this.height);
 			this.leaveScreen.create(this.pencilConfig);
 		},
 		touchstart(e) {
@@ -114,7 +139,6 @@ export default {
 			document.body.addEventListener('touchmove', this.stopTouchScroll, {
 				passive: false,
 			});
-
 			// 保存每次画后的图
 			this.preImg.push(ShowCanvas.onlineCtx.getImageData(0, 0, this.width, this.height));
 
@@ -135,7 +159,6 @@ export default {
 				this.points.shift();
 
 				this.LeaveScreenCanvas(point1, point2);
-				// this.eraser()
 			}
 		},
 		touchend() {
@@ -144,19 +167,17 @@ export default {
 		},
 		LeaveScreenCanvas(point1, point2) {
 			if (this.state === '橡皮擦') {
-				ShowCanvas.onlineCtx.globalCompositeOperation = 'source-over';
 				this.leaveScreen.draw(draw, {
 					point1,
 					point2,
 				}); // 绘制路径
-				this.leaveScreen.render(ShowCanvas.onlineCtx);
 			} else if (this.state === '铅笔') {
-				this.showCanvasObj.clear(clear, {
+				this.leaveScreen.draw(clear, {
 					point1,
 					point2,
-				}); // 绘制路径
-				this.leaveScreen.renderLeave(ShowCanvas.canvas);
+				});
 			}
+			this.leaveScreen.render(ShowCanvas.onlineCtx);
 		},
 
 		// * 切换
@@ -174,31 +195,20 @@ export default {
 				default:
 					break;
 			}
-			// 设置画笔颜色大小属性
-			this.leaveScreen.create(this.pencilConfig);
-
-			// 改变当前状态
-			this.currentShow = '操作';
-			this.state = '橡皮擦';
 		},
 		// * 功能
 		PencilAndEraser() {
-			if (this.state === '铅笔') {
-				this.leaveScreen.create(this.pencilConfig);
-				this.state = '橡皮擦';
-			} else {
-				this.showCanvasObj.create();
-				this.state = '铅笔';
-			}
+			this.state === '铅笔' ? (this.state = '橡皮擦') : (this.state = '铅笔');
 		},
 		// 撤销功能
 		revoke() {
 			if (this.preImg.length <= 0) return;
-			ShowCanvas.onlineCtx.putImageData(this.preImg[this.preImg.length - 1], 0, 0);
+			this.leaveScreen.render(ShowCanvas.onlineCtx, this.preImg[this.preImg.length - 1]);
 			this.preImg.pop();
 		},
 		clearBoard() {
-			ShowCanvas.onlineCtx.clearRect(0, 0, this.width, this.height);
+			this.leaveScreen.clearAll();
+			this.leaveScreen.render(ShowCanvas.onlineCtx);
 			this.preImg = [];
 		},
 		complete() {
