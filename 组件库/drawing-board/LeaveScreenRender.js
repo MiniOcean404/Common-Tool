@@ -1,13 +1,19 @@
 // 离屏渲染,还可以使用webWork进行多线程渲染
 class LeaveScreenRender {
-  //私有属性
-  #cancelAnimationFrameID
-  #width
-  #height
   static offlineCtx // 离线canvas
   static canvas
 
+  //私有属性
+  #width
+  #height
+  #cancelAnimationFrameID
+
   constructor(width, height) {
+    if (this.#width === width&&this.#height === height){
+      LeaveScreenRender.offlineCtx.clearRect(0,0,this.#width, this.#height)
+      return
+    }
+
     LeaveScreenRender.canvas = document.createElement('canvas')
     LeaveScreenRender.offlineCtx = LeaveScreenRender.canvas.getContext('2d')
     LeaveScreenRender.canvas.width = this.#width = width
@@ -62,7 +68,7 @@ class LeaveScreenRender {
 
 
   //签完名的图片旋转处理
-  rotateImg(src, edg,cb) {
+  rotateImg(src, edg, cb) {
     const canvas = LeaveScreenRender.canvas
     const ctx = LeaveScreenRender.offlineCtx
 
