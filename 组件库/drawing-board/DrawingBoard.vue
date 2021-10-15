@@ -8,28 +8,28 @@
 				@touchend.stop="touchend"
 			></div>
 
-			<div class="total-control-board">
-				<div @click="palette" class="pencil-color" :style="pencilStyle"></div>
+			<div :class="totalControlClassObj">
+				<div class="operate " v-show="currentShow === '操作'">
+					<div @click="palette" :class="pencilColorClassObj" :style="pencilStyle"></div>
 
-				<div class="operate" v-show="currentShow === '操作'">
-					<div @click="PencilAndEraser" class="board-button">
+					<div @click="PencilAndEraser" :class="buttonClassObj">
 						<slot name="pencil">{{ state }}</slot>
 					</div>
 
-					<div @click="revoke" class="board-button">
+					<div @click="revoke" :class="buttonClassObj">
 						<slot name="revoke">撤销</slot>
 					</div>
 
-					<div @click="clearBoard" class="board-button">
+					<div @click="clearBoard" :class="buttonClassObj">
 						<slot name="delete">清屏</slot>
 					</div>
 
-					<div class="complete" @click="complete">
+					<div :class="finishClassObj" @click="complete">
 						完成
 					</div>
 				</div>
 
-				<ul class="operate" v-show="currentShow === '画笔'">
+				<ul :class="penColorClassObj" v-show="currentShow === '画笔'">
 					<li
 						class="color-list"
 						:style="{ backgroundColor: color }"
@@ -39,7 +39,7 @@
 					></li>
 				</ul>
 
-				<ul class="pen-size" v-show="currentShow === '画笔'">
+				<ul class="pen-size " v-show="currentShow === '画笔'">
 					<li
 						class="size-list"
 						:style="{ width: size + 'px', height: size + 'px' }"
@@ -86,6 +86,31 @@ export default {
 			pencilStyle: {
 				backgroundColor: '#000',
 			},
+
+			// 处理旋转样式
+			totalControlClassObj: {
+				'total-control-board': true,
+				'rotate-board': !this.upright,
+			},
+			buttonClassObj: {
+				'board-button': true,
+				rotate: !this.upright,
+			},
+			finishClassObj: {
+				'board-button': true,
+				complete: true,
+				rotate: !this.upright,
+			},
+			// 笔的样式旋转
+			penColorClassObj: {
+				'pen-color': true,
+				'pen-color-rotate': !this.upright,
+			},
+			pencilColorClassObj: {
+				'pencil-color': true,
+				'pen-color-rotate': !this.upright,
+			},
+
 			stopTouchScroll(e) {
 				e.preventDefault();
 			},
@@ -93,6 +118,11 @@ export default {
 	},
 	mounted() {
 		this.createCanvas();
+	},
+	computed: {
+		upright() {
+			return this.orientation === '竖';
+		},
 	},
 	watch: {
 		state(val) {

@@ -1,116 +1,132 @@
-$height: 60rpx;
+$button-height: 60rpx;
 $page-background-color: #fbfbfb;
 $font-color: #726f6e;
 $border-color: #d8d7d7;
 
 @mixin ScrollHorizontally {
-	overflow-x: scroll;
-	white-space: nowrap;
+  overflow-x: scroll;
+  white-space: nowrap;
+}
+
+@mixin ColorSelect{
+  height: inherit;
+  width: 64rpx;
+  display: inline-block;
+  margin-right: 20rpx;
+  box-sizing: border-box;
+
+  border-radius: 50%;
+  border: 1px solid $border-color;
+  padding: 8rpx;
+  background-clip: content-box;
 }
 
 #Board {
-	width: 100vw;
-	height: 100vh;
-	background-color: $page-background-color;
+  width: 100vw;
+  height: 100vh;
+  background-color: $page-background-color;
 
-	.rotate {
-		float: right;
-	}
+  .rotate {
+    float: right;
+  }
 
-	.left-right-margin {
-		margin: 20rpx auto 0;
+  .left-right-margin {
+    margin: 20rpx auto 0;
 
-		.DrawingBoard {
-			width: inherit;
-			background-color: white;
-			border-radius: 10px;
-			margin: 0 auto;
-			border: 1px solid $border-color;
-		}
+    .DrawingBoard {
+      width: inherit;
+      background-color: white;
+      border-radius: 10px;
+      margin: 0 auto;
+      border: 1px solid $border-color;
+    }
 
-		.total-control-board {
-			color: $font-color;
-			width: inherit;
-			background-color: $page-background-color;
-			margin-top: 40rpx;
-			display: flex;
-			transition: all 0.3s ease-in;
+    .total-control-board {
+      width: inherit;
+      height: 64rpx;
 
-			.pencil-color {
-				display: inline-block;
-				margin-right: 20rpx;
-				margin-top: 20rpx;
-				box-sizing: border-box;
-				border-radius: 50%;
-				width: $height;
-				height: $height;
-				border: 1px solid $border-color;
-				padding: 8rpx;
-				background-clip: content-box;
-			}
+      color: $font-color;
+      background-color: $page-background-color;
+      margin-top: 40rpx;
+      display: flex;
+      transition: all 0.3s ease-in;
 
-			.operate {
-				flex: 1;
-				line-height: $height;
-				font-size: 14px;
-				border-radius: 6px;
-				padding: 20rpx 0;
-				@include ScrollHorizontally;
+      .operate {
+        height: inherit;
+        display: flex;
+        flex: 1;
+        font-size: 14px;
+        @include ScrollHorizontally;
 
-				.board-button {
-					margin-right: 20rpx;
-					display: inline-block;
-					width: 20%;
-					height: $height;
-					text-align: center;
-					border: 1px solid $border-color;
-					border-radius: 5px;
-				}
+        .pencil-color {
+          @include ColorSelect;
+        }
 
-				.complete {
-					display: inline-block;
-					width: 20%;
-					height: $height;
-					text-align: center;
-					border: 1px solid #008ef9;
-					border-radius: 5px;
-					color: white;
-					background-color: #008ef9;
-				}
+        .board-button {
+          margin-right: 20rpx;
+          display: inline-block;
+          width: 20%;
+          line-height: $button-height;
+          text-align: center;
+          border: 1px solid $border-color;
+          border-radius: 5px;
+        }
 
-				.color-list {
-					display: inline-block;
-					box-sizing: border-box;
-					width: $height;
-					height: $height;
-					border-radius: 50%;
-					background-clip: content-box;
-					border: 1px solid $border-color;
-					padding: 10rpx;
-					margin: 0 20rpx 0 20rpx;
-				}
-			}
+        .complete {
+          color: white;
+          border: 1px solid #008ef9;
+          background-color: #008ef9;
+        }
+      }
 
-			.pen-size {
-				flex: 1;
-				font-size: 14px;
-				border-radius: 6px;
-				height: 102rpx;
-				@include ScrollHorizontally;
+      .pen-color {
+        height: inherit;
+        flex: 1;
+        @include ScrollHorizontally;
 
-				display: flex;
-				justify-content: center;
-				align-items: center;
+        .color-list {
+          @include ColorSelect;
+        }
+      }
 
-				.size-list {
-					display: inline-block;
-					box-sizing: border-box;
-					background-color: #eee;
-					border-radius: 50%;
-					padding: 10rpx;
-					margin: 0 20rpx 0 20rpx;
-				}
-			}
-		}
-	}
+
+      .pen-size {
+        flex: 1;
+        font-size: 14px;
+        border-radius: 6px;
+        line-height: 0;
+        @include ScrollHorizontally;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        .size-list {
+          display: inline-block;
+          box-sizing: border-box;
+          background-color: #eee;
+          border-radius: 50%;
+          padding: 10rpx;
+          margin: 0 20rpx 0 20rpx;
+        }
+      }
+    }
+  }
+
+  .rotate {
+    transform: rotate(90deg);
+    margin-top: 36rpx;
+    height: 64rpx;
+  }
+
+  .rotate-board{
+    height: 140rpx !important;
+  }
+
+  .pen-color-rotate{
+    margin-top: 36rpx !important;
+    height: 64rpx !important;
+  }
 }
+
+
