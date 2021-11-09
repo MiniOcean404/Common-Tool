@@ -1,13 +1,18 @@
 <template>
 	<div id="image-change">
 		<div class="container">
-			<div class="img">
-				<Gesture v-slot:move @change="change" @move="move" :moveRage="moveRange">
-					<img class="show-image" v-show="url" :src="url" alt="" ref="img" />
-				</Gesture>
-				<!--方框-->
-				<div class="select-box" ref="select"></div>
-			</div>
+			<Gesture
+				v-slot:move
+				@change="change"
+				@move="move"
+				:is-move="gesture.isMove"
+				:move-range="moveRange"
+			>
+				<img class="show-image" v-show="url" :src="url" alt="" ref="img" />
+			</Gesture>
+
+			<!--方框-->
+			<div class="select-box" ref="select"></div>
 		</div>
 
 		<div class="operate">
@@ -28,21 +33,19 @@ export default {
 	data() {
 		return {
 			url: '',
-			originImageInfo: {
+			imgInfo: {
 				realWidth: '',
-				realHeight: '',
-				width: '',
-				height: '',
-			},
-			changeImageInfo: {
-				x: '',
-				y: '',
-				aspectRatio: '',
-				scale: '',
+				rect: null,
 			},
 			selectBox: {
+				rect: null,
 				width: 0,
 				height: 0,
+			},
+			gesture: {
+				isMove: true,
+				width: 300,
+				height: 300,
 			},
 			moveRange: [],
 		};
@@ -57,13 +60,15 @@ export default {
 		init() {
 			this.selectBox.width = this.$refs.select.clientWidth;
 			this.selectBox.height = this.$refs.select.clientHeight;
+			this.selectBox.rect = this.$refs.select.getBoundingClientRect();
 
-			this.moveRange = [
-				this.$refs.select.offsetLeft,
-				this.$refs.select.offsetTop,
-				this.$refs.select.offsetLeft + this.$refs.select.clientWidth,
-				this.$refs.select.offsetTop + this.$refs.select.clientHeight,
-			];
+			const boxRect = this.selectBox.rect;
+			this.moveRange.push(
+				boxRect.left,
+				boxRect.left + boxRect.width,
+				boxRect.top,
+				boxRect.top + boxRect.height,
+			);
 		},
 		selectImage() {
 			const _this = this;
@@ -73,18 +78,19 @@ export default {
 				sourceType: ['album', 'camera'], //从相册选择
 				success(res) {
 					const img = _this.$refs.img;
+
 					_this.url = res.tempFilePaths[0];
 
 					img.onload = function() {
 						img.style.width = '';
 
-						_this.originImageInfo.realWidth = img.width;
-						_this.originImageInfo.realHeight = img.height;
+						_this.imgInfo.realWidth = img.width;
 
-						img.style.width = '100%';
+						img.style.width = `${document.body.clientWidth}px`;
 
-						_this.originImageInfo.width = img.width;
-						_this.originImageInfo.height = img.height;
+						_this.imgInfo.rect = _this.$refs.img.getBoundingClientRect();
+						_this.gesture.width = _this.imgInfo.rect.width * 2 - _this.selectBox.width;
+						_this.gesture.height = _this.imgInfo.rect.height * 2 + _this.selectBox.height;
 					};
 				},
 				fail() {
@@ -97,7 +103,7 @@ export default {
 			});
 		},
 		// 缩放计算
-		change(state, e) {
+		change(state) {
 			switch (state) {
 				case 'start':
 					break;
@@ -110,7 +116,7 @@ export default {
 			}
 		},
 		// 移动计算
-		move(state, e) {
+		move(state, e, move) {
 			switch (state) {
 				case 'start':
 					break;
@@ -123,12 +129,12 @@ export default {
 			}
 		},
 		sure() {
-			const rect = this.$refs.img.getBoundingClientRect();
-			const boxRect = this.$refs.select.getBoundingClientRect();
-			const b = this.originImageInfo.realWidth / rect.width;
+			const imgRect = this.imageInfo.rect;
+			const boxRect = this.selectBox.rect;
+			const b = this.imgInfo.realWidth / imgRect.width;
 
-			const top = boxRect.top - rect.top;
-			const left = boxRect.left - rect.left;
+			const top = boxRect.top - imgRect.top;
+			const left = boxRect.left - imgRect.left;
 
 			const canvas = document.createElement('canvas');
 			canvas.width = this.selectBox.width;

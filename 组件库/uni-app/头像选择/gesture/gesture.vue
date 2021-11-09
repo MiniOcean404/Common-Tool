@@ -11,8 +11,15 @@
 </template>
 
 <script>
-import { getAngle, getDistance, relativeCoordinate } from './double-finger';
-import { getTranslate } from './single-finger';
+import {
+	doubleScaleLimit,
+	getAngle,
+	getDistance,
+	isScaleLimit,
+	patchScaleError,
+	relativeCoordinate,
+} from './double-finger';
+import { getTranslate, singleRangeLimit } from './single-finger';
 
 export default {
 	name: 'gesture.vue',
@@ -25,13 +32,27 @@ export default {
 			type: Number,
 			default: 2,
 		},
-		moveRage: {
+		x: {
+			type: Number,
+			default: 0,
+		},
+		y: {
+			type: Number,
+			default: 0,
+		},
+		isMove: {
+			type: Boolean,
+			default: true,
+		},
+		moveRange: {
 			type: Array,
 			default: [],
 		},
 	},
 	data() {
 		return {
+			box: null,
+			boxRect: null,
 			touchInfo: {
 				isDoubleTouch: false, // 判断是否在双指状态
 				x: 0,
@@ -45,7 +66,6 @@ export default {
 					detail: { scale: 0, rotation: 0, x: 0, y: 0 },
 				}),
 			},
-			box: null,
 			boxChangeInfo: {
 				scalePositionChange: false,
 				// tMatrix: [1, 0, 0, 1, 0, 0], // x缩放，无，无，y缩放，x平移，y平移
@@ -64,6 +84,7 @@ export default {
 	mounted() {
 		this.init();
 	},
+	beforeUpdate() {},
 	beforeDestroy() {
 		this.box.removeEventListener('gesturestart', this.gesture);
 		this.box.removeEventListener('gesturechange', this.gesture);
@@ -81,6 +102,9 @@ export default {
 			this.box.addEventListener('gesturechange', this.gesture);
 			this.box.addEventListener('gestureend', this.gesture);
 
+			this.box.style.transform = `matrix(1, 0, 0, 1, ${this.x}, ${this.y})`;
+			this.box.style.transformOrigin = 'center';
+
 			document.body.addEventListener('touchmove', this.stopTouchScroll, {
 				passive: false,
 			});
@@ -96,6 +120,7 @@ export default {
 			}
 		},
 		touchmove(e) {
+			this.boxRect = this.$refs.gesture.getBoundingClientRect();
 			if (e.touches.length >= 2) {
 				this.doubleFinger(e.type, e);
 			} else if (this.touchInfo.isDoubleTouch === false) {
@@ -120,21 +145,32 @@ export default {
 				case 'touchmove':
 					x = e.touches[0].pageX;
 					y = e.touches[0].pageY;
-					let { scale } = this.boxChangeInfo;
 
-					const translated = getTranslate(this.box);
+					// 计算移动距离并且是否要被限制
+					let realMoveX = x - this.boxChangeInfo.clickX;
+					let realMoveY = y - this.boxChangeInfo.clickY;
 
-					this.boxChangeInfo.translateX = x - this.boxChangeInfo.clickX + translated.left;
-					this.boxChangeInfo.translateY = y - this.boxChangeInfo.clickY + translated.top;
-
-					// 控制可移动范围
-					this.moveRangeHandle();
-
-					this.box.style.transform = `matrix(${scale}, 0, 0, ${scale}, ${this.boxChangeInfo.translateX}, ${this.boxChangeInfo.translateY})`;
 					this.boxChangeInfo.clickX = x;
 					this.boxChangeInfo.clickY = y;
 
-					this.$emit('move', 'change', e);
+					if ((this.moveRange.length = 4)) {
+						const flag = singleRangeLimit(this.boxRect, this.moveRange, {
+							x: realMoveX,
+							y: realMoveY,
+						});
+						realMoveX = flag.x === false ? 0 : realMoveX;
+						realMoveY = flag.y === false ? 0 : realMoveY;
+					}
+
+					// 移动距离加上之前的移动，并且设置上
+					const translated = getTranslate(this.box);
+					this.boxChangeInfo.translateX = realMoveX + translated.left;
+					this.boxChangeInfo.translateY = realMoveY + translated.top;
+
+					let { scale } = this.boxChangeInfo;
+					this.box.style.transform = `matrix(${scale}, 0, 0, ${scale}, ${this.boxChangeInfo.translateX}, ${this.boxChangeInfo.translateY})`;
+
+					this.$emit('move', 'change', e, { x: realMoveX, y: realMoveY });
 					break;
 				case 'touchend':
 					this.boxChangeEmit();
@@ -145,8 +181,8 @@ export default {
 		doubleFinger(type, e) {
 			switch (type) {
 				case 'touchstart':
-					this.touchInfo.isDoubleTouch = true;
 					this.touchInfo.start = e.touches;
+					this.touchInfo.isDoubleTouch = true;
 					this.boxChangeInfo.scalePositionChange = false;
 
 					this.box.dispatchEvent(this.event.gesturestart);
@@ -159,8 +195,6 @@ export default {
 					// 角度缩放比例进行计算
 					const newScale = getDistance(now[0], now[1]) / getDistance(start[0], start[1]);
 					this.boxChangeInfo.scale = scale = newScale * scale;
-					this.boxChangeInfo.rotation = getAngle(now[0], now[1]) - getAngle(start[0], start[1]); //得到旋转角度差
-
 					if (newScale > 1 && scale > this.max) {
 						this.boxChangeInfo.scale = scale = this.max;
 					}
@@ -168,20 +202,43 @@ export default {
 						this.boxChangeInfo.scale = scale = this.min;
 					}
 
-					// 修正缩放视野变化带来的平移量
+					this.boxChangeInfo.rotation = getAngle(now[0], now[1]) - getAngle(start[0], start[1]); //得到旋转角度差
+
+					// 计算缩放限制位置
+					let point;
+					if (this.moveRange.length === 4) {
+						point = doubleScaleLimit(this.boxRect, this.moveRange, scale);
+
+						if (point) scalePositionChange = false;
+					}
+
 					if (!scalePositionChange) {
 						this.boxChangeInfo.scalePositionChange = true;
-						const origin = relativeCoordinate(now, this.box, scale);
-						// 真实偏移量
-						const offsetX = (scale - 1) * (origin.x - this.touchInfo.x);
-						const offsetY = (scale - 1) * (origin.y - this.touchInfo.y);
-						// 偏移之后加上单个手指的移动距离
-						this.boxChangeInfo.translateX = offsetX + translateX;
-						this.boxChangeInfo.translateY = offsetY + translateY;
 
-						this.box.style.transformOrigin = `${origin.x}px ${origin.y}px`;
-						this.touchInfo.x = origin.x;
-						this.touchInfo.y = origin.y;
+						// 计算源坐标位置，判断是否需要对源左边进行限制，对源坐标偏移进行修复
+						let origin = relativeCoordinate(this.boxRect, now, scale);
+						let limitOrigin;
+						if (this.moveRange.length === 4) {
+							limitOrigin = isScaleLimit(point, this.boxRect, origin);
+						}
+
+						// 判断这个是否被限制的时候是否需要放大，如果满足就按手指位置进行放大
+						const originUse = limitOrigin.isLimit && newScale > 1 ? origin : limitOrigin;
+						const info = patchScaleError(originUse, scale, this.touchInfo, {
+							translateX,
+							translateY,
+						});
+
+						// 对数据赋值，进行样式设置
+						const { box, touch, patchOrigin } = info;
+
+						this.boxChangeInfo.translateX = box.translateX;
+						this.boxChangeInfo.translateY = box.translateY;
+
+						this.touchInfo.x = touch.x;
+						this.touchInfo.y = touch.y;
+
+						this.box.style.transformOrigin = `${patchOrigin.x}px ${patchOrigin.y}px`;
 					}
 
 					this.box.style.transform = `matrix(${scale}, 0, 0, ${scale}, ${this.boxChangeInfo.translateX}, ${this.boxChangeInfo.translateY})`;
@@ -215,18 +272,6 @@ export default {
 			this.event.gestureend.detail.y = this.boxChangeInfo.translateY;
 
 			this.box.dispatchEvent(this.event.gestureend);
-		},
-
-		moveRangeHandle() {
-			if (this.moveRage?.length > 4) {
-				const rect = this.box.getBoundingClientRect();
-				console.log('rect.left ', rect.left);
-				if (rect.left > 0 && this.boxChangeInfo.translateX > this.moveRage[0]) {
-					this.boxChangeInfo.translateX = this.moveRage[0];
-				}
-
-				// this.box
-			}
 		},
 	},
 };
