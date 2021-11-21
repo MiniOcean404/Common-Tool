@@ -3,24 +3,21 @@ const common = require('./webpack.common');
 const { merge } = require('webpack-merge');
 const { resolve } = require('./utils');
 const { devMode } = require('./config');
-const Webpack = require('webpack');
+const webpack = require('webpack');
 
 module.exports = merge(common, {
 	mode: 'development',
 	// 开发服务器 devServer：用来自动化，不用每次修改后都重新输入webpack打包一遍（自动编译，自动打开浏览器，自动刷新浏览器）
 	// 特点：只会在内存中编译打包，不会有任何输出（不会像之前那样在外面看到打包输出的build包，而是在内存中，关闭后会自动删除）
-	// 启动devServer指令为：npx webpack-dev-server
 	devServer: {
 		// 该配置项允许配置从目录提供静态文件的选项（默认是 'public' 文件夹）。将其设置为 false 以禁用：
 		static: {
 			directory: resolve('dist'),
 		},
-		// 启动gzip压缩
-		compress: true,
+		compress: true, // 启动gzip压缩
 		port: 3000,
 		open: true,
-		//开启HMR功能
-		hot: true,
+		hot: true, //开启HMR功能
 		client: {
 			// 当出现编译错误或警告时，在浏览器中显示全屏覆盖。
 			overlay: {
@@ -45,6 +42,5 @@ module.exports = merge(common, {
 	},
 	// 注意：Webpack升级到5.0后，target默认值值会根据package.json中的browserslist改变，导致devServer的自动更新失效。所以development环境下直接配置成web。
 	target: 'web',
-	devtool: devMode ? false : 'eval-cheap-source-map',
-	// plugins: [new Webpack.HotModuleReplacementPlugin()],
+	devtool: false,
 });
