@@ -269,6 +269,7 @@ module.exports = {
 		new HtmlWebpackPlugin({
 			template: resolve('public/index.html'),
 			filename: 'index.html',
+			title: dotEnv.parsed.VUE_APP_TITLE || '.env中未配置',
 			minify: {
 				collapseWhitespace: true, // 去掉空格
 				removeComments: true, // 去掉注释
@@ -285,10 +286,4 @@ module.exports = {
 		// new HardSourceWebpackPlugin(),
 		// new HardSourceWebpackPlugin.ExcludeModulePlugin([]),
 	],
-	// cache: {
-	// 	type: 'filesystem', //保存位置，开发环境下默认为memory类型，生产环境cache配置默认是关闭的。
-	// 	buildDependencies: {
-	// 		config: [__filename],
-	// 	},
-	// },
 };

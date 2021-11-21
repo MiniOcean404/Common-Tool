@@ -20,6 +20,13 @@ const mergeLate = merge(common, {
 	performance: {
 		hints: false, // 枚举
 	},
+	cache: {
+		type: 'filesystem', //保存位置，开发环境下默认为memory类型，生产环境cache配置默认是关闭的。
+		buildDependencies: {
+			config: [__filename],
+			cacheDirectory: resolve('node_modules/.webpack-cache'),
+		},
+	},
 	optimization: {
 		// 为块生成 id 的方法
 		chunkIds: 'size',
