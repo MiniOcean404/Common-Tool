@@ -24,7 +24,7 @@ const mergeLate = merge(common, {
 		type: 'filesystem', //保存位置，开发环境下默认为memory类型，生产环境cache配置默认是关闭的。
 		buildDependencies: {
 			config: [__filename],
-			cacheDirectory: resolve('node_modules/.webpack-cache'),
+			cacheDirectory: [resolve('node_modules/.webpack-cache')],
 		},
 	},
 	optimization: {

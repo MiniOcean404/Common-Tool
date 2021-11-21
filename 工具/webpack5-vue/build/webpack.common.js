@@ -75,7 +75,7 @@ module.exports = {
 			views: resolve('src/views'),
 			components: resolve('src/components'),
 		},
-		// modules: ['node_modules'],
+		modules: ['node_modules'],
 		mainFields: ['jsnext:main', 'browser', 'main'],
 	},
 	externals: {},
