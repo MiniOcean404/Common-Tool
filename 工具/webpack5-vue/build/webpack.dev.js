@@ -27,6 +27,7 @@ module.exports = merge(common, {
 			// 在浏览器中以百分比显示编译进度。
 			progress: true,
 		},
+		historyApiFallback: true, // 开启支持vue的history模式
 		// 设置代理
 		// proxy: {
 		// 	// 一旦devServer(5000端口)接收到/api/xxx的请求，就会用devServer起的服务把请求转发到另外一个服务器（3000）
