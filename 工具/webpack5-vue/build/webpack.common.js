@@ -1,5 +1,5 @@
 const { resolve } = require('./utils');
-const { devMode, dotEnv, env } = require('./config');
+const { devMode, dotEnvConfig, env } = require('./config');
 const chalk = require('chalk');
 
 const { DefinePlugin } = require('webpack');
@@ -46,22 +46,23 @@ threadLoader.warmup(cssWorkerPool, [
 
 module.exports = {
 	entry: {
-		main: [resolve('src/main.js')],
+		app: [resolve('src/main.js')],
 	},
 	//出口文件的配置项
 	output: {
 		path: resolve('dist'),
-		// webpack5使用contenthash
+		//  contenthash:根据文件内容生成hash值，文件内容改变，从而使得cache-loader,cacheDirectory失效
+		//  chunckhash:根据文件块生成hash值，文件内容改变，会使得这个文件及其被引入的其他文件生成新的hash而失效
 		filename: 'js/[name].[contenthash:8].js',
 		//非入口文件chunk的名称。所谓非入口即import动态导入形成的chunk或者optimization中的splitChunks提取的公共chunk,它支持和 filename 一致的内置变量
 		chunkFilename: 'js/common-or-noEntry.chunk.[contenthash:10].js',
+		// 所有资源引入公共路径前缀，小心使用
+		publicPath: '/',
 		clean: true, // 打包前清空输出目录，相当于clean-webpack-plugin插件的作用,webpack5新增。
 		library: {
 			name: '[name]', //整个库向外暴露的变量名
 			type: 'window', //库暴露的方式
 		},
-		// 所有资源引入公共路径前缀，一般用于生产环境，小心使用
-		// publicPath: './',
 	},
 	resolve: {
 		extensions: ['.vue', '.js', '.css', '.scss', '.ts'],
@@ -89,12 +90,6 @@ module.exports = {
 						options: vueWorkerPool,
 					},
 					{
-						loader: 'cache-loader',
-						options: {
-							cacheDirectory: './node_modules/.cache/vue-loader',
-						},
-					},
-					{
 						loader: 'vue-loader',
 						options: {
 							compilerOptions: {
@@ -104,90 +99,6 @@ module.exports = {
 						},
 					},
 				],
-			},
-			{
-				test: /\.js$/,
-				use: [
-					{
-						loader: 'thread-loader',
-						options: jsWorkerPool,
-					},
-					{
-						loader: 'cache-loader',
-						options: {
-							cacheDirectory: './node_modules/.cache/js-loader',
-						},
-					},
-					{
-						loader: 'babel-loader',
-						options: {
-							presets: ['@babel/preset-env'],
-							cacheDirectory: './node_modules/.cache/js-loader',
-						},
-					},
-				],
-				exclude: /node_modules/,
-			},
-			// css文件处理
-			// css-loader：将css文件整合到js文件中
-			// 经过css-loader处理后，样式文件是在js文件中的
-			// 问题：1.js文件体积会很大2.需要先加载js再动态创建style标签，样式渲染速度就慢，会出现闪屏现象
-			// 这个loader取代style-loader。作用：提取js中的css成单独文件然后通过link加载
-			{
-				test: /\.(sa|sc|c)ss$/,
-				use: [
-					{
-						loader: 'cache-loader',
-						options: {
-							cacheDirectory: './node_modules/.cache/css-loader',
-						},
-					},
-					{
-						loader: devMode ? 'vue-style-loader' : MiniCssExtractPlugin.loader,
-						// loader: 'vue-style-loader',
-						options: {
-							esModule: false,
-							publicPath: '../',
-						},
-					},
-					//thread-loader 放在了 style-loader 之后，这是因为 thread-loader 后的 loader 没法存取文件也没法获取 webpack 的选项设置
-					{
-						loader: 'thread-loader',
-						options: cssWorkerPool,
-					},
-					{
-						loader: 'css-loader',
-						options: {
-							importLoaders: 2,
-						},
-					},
-					{
-						loader: 'postcss-loader',
-						options: {
-							sourceMap: true,
-						},
-					},
-					{ loader: 'sass-loader' },
-					// {
-					// 	loader: 'sass-resources-loader',
-					// 	options: {
-					// 		resources: [
-					// 			resolve('src/assets/styles/variables.scss'),
-					// 			resolve('src/assets/styles/mixin.scss'),
-					// 		],
-					// 	},
-					// },
-				],
-			},
-			{
-				test: /\.svg$/,
-				exclude: resolve('src/assets/icons'),
-				type: 'javascript/auto',
-				loader: 'file-loader',
-				options: {
-					limit: 4 * 1024,
-					name: 'svg/svg.[contenthash:8].[ext]',
-				},
 			},
 			{
 				test: /\.svg$/,
@@ -203,29 +114,105 @@ module.exports = {
 				],
 			},
 			{
-				// url-loader：处理图片资源，问题：默认处理不了html中的img图片
-				test: /\.(png|jpe?g|gif|webp)(\?.*)?$/,
-				// 需要下载 url-loader file-loader
-				loader: 'url-loader',
-				type: 'javascript/auto', // webpack5新增type: "asset"内置模块，使用原来的方式需要加上这条
-				options: {
-					// 图片大小小于8kb，就会被base64处理，优点：减少请求数量（减轻服务器压力），缺点：图片体积会更大（文件请求速度更慢）
-					// base64在客户端本地解码所以会减少服务器压力，如果图片过大还采用base64编码会导致cpu调用率上升，网页加载时变卡
-					limit: 4 * 1024,
-					// 给图片重命名，[hash:10]：取图片的hash的前10位，[ext]：取文件原来扩展名
-					name: 'img/img.[contenthash:8].[ext]',
-					esModule: false,
-					fallback: {
+				// * oneOf 匹配一个loader后就不往下进行处理（同一个文件只能匹配一个）
+				oneOf: [
+					{
+						test: /\.js$/,
+						use: [
+							{
+								loader: 'thread-loader',
+								options: jsWorkerPool,
+							},
+							{
+								loader: 'babel-loader',
+								options: {
+									presets: ['@babel/preset-env'],
+									cacheDirectory: './node_modules/.cache/js-loader',
+								},
+							},
+						],
+						exclude: /node_modules/,
+					},
+					// css文件处理
+					// css-loader：将css文件整合到js文件中
+					// 经过css-loader处理后，样式文件是在js文件中的
+					// 问题：1.js文件体积会很大2.需要先加载js再动态创建style标签，样式渲染速度就慢，会出现闪屏现象
+					// 这个loader取代style-loader。作用：提取js中的css成单独文件然后通过link加载
+					{
+						test: /\.(sa|sc|c)ss$/,
+						use: [
+							{
+								loader: 'cache-loader',
+								options: {
+									cacheDirectory: './node_modules/.cache/css-loader',
+								},
+							},
+							{
+								// * vue-style-loader 和 style-loader内部实现了css的hmr功能
+								loader: devMode ? 'vue-style-loader' : MiniCssExtractPlugin.loader,
+								options: {
+									esModule: false,
+									publicPath: '../',
+								},
+							},
+							//thread-loader 放在了 style-loader 之后，这是因为 thread-loader 后的 loader 没法存取文件也没法获取 webpack 的选项设置
+							{
+								loader: 'thread-loader',
+								options: cssWorkerPool,
+							},
+							{
+								loader: 'css-loader',
+								options: {
+									importLoaders: 2,
+									modules: {
+										// scss分享变量给js
+										// :export {
+										//   color: $color;
+										// }
+										compileType: 'icss',
+									},
+								},
+							},
+							{
+								loader: 'postcss-loader',
+								options: {
+									sourceMap: true,
+								},
+							},
+							{
+								loader: 'sass-loader',
+
+								options: {
+									// scss自动import全局文件
+									// 		additionalData: `
+									//   @import "src/scss-vars.scss";
+									// `,
+									sassOptions: {
+										includePaths: [resolve()],
+									},
+								},
+							},
+							// {
+							// 	loader: 'sass-resources-loader',
+							// 	options: {
+							// 		resources: [
+							// 			resolve('src/assets/styles/variables.scss'),
+							// 			resolve('src/assets/styles/mixin.scss'),
+							// 		],
+							// 	},
+							// },
+						],
+					},
+					{
+						test: /\.svg$/,
+						exclude: resolve('src/assets/icons'),
+						type: 'javascript/auto',
 						loader: 'file-loader',
 						options: {
-							name: 'img/[name].[contenthash:8].[ext]',
+							limit: 4 * 1024,
+							name: 'svg/svg.[contenthash:8].[ext]',
 						},
 					},
-				},
-			},
-			{
-				oneOf: [
-					// 视频文件处理
 					{
 						test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/, //媒体文件
 						exclude: /\.(html|js|ts|css|less|jpg|png|gif)/,
@@ -242,7 +229,6 @@ module.exports = {
 							},
 						},
 					},
-					// 字体文件处理
 					{
 						test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/i, //媒体文件
 						exclude: /\.(html|js|ts|css|less|jpg|png|gif)/,
@@ -259,17 +245,39 @@ module.exports = {
 							},
 						},
 					},
+					{
+						// url-loader：处理图片资源，问题：默认处理不了html中的img图片
+						test: /\.(png|jpe?g|gif|webp)(\?.*)?$/,
+						// 需要下载 url-loader file-loader
+						loader: 'url-loader',
+						type: 'javascript/auto', // webpack5新增type: "asset"内置模块，使用原来的方式需要加上这条
+						options: {
+							// 图片大小小于8kb，就会被base64处理，优点：减少请求数量（减轻服务器压力），缺点：图片体积会更大（文件请求速度更慢）
+							// base64在客户端本地解码所以会减少服务器压力，如果图片过大还采用base64编码会导致cpu调用率上升，网页加载时变卡
+							limit: 4 * 1024,
+							// 给图片重命名，[hash:10]：取图片的hash的前10位，[ext]：取文件原来扩展名
+							name: 'img/img.[contenthash:8].[ext]',
+							esModule: false,
+							fallback: {
+								loader: 'file-loader',
+								options: {
+									name: 'img/[name].[contenthash:8].[ext]',
+								},
+							},
+						},
+					},
 				],
 			},
 		],
 	},
 	plugins: [
 		// 设置全局变量
-		new DefinePlugin({}),
+		new DefinePlugin({ 'process.env': JSON.stringify(dotEnvConfig) }),
 		new HtmlWebpackPlugin({
 			template: resolve('public/index.html'),
 			filename: 'index.html',
-			title: dotEnv.parsed.VUE_APP_TITLE || '.env中未配置',
+			title: dotEnvConfig.VUE_APP_TITLE || '.env中未配置',
+			// 对html进行压缩
 			minify: {
 				collapseWhitespace: true, // 去掉空格
 				removeComments: true, // 去掉注释
