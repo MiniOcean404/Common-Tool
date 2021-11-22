@@ -152,7 +152,6 @@ module.exports = {
 								loader: devMode ? 'vue-style-loader' : MiniCssExtractPlugin.loader,
 								options: {
 									esModule: false,
-									publicPath: '../',
 								},
 							},
 							//thread-loader 放在了 style-loader 之后，这是因为 thread-loader 后的 loader 没法存取文件也没法获取 webpack 的选项设置
