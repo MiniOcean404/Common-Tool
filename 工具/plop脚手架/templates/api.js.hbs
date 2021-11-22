@@ -1,0 +1,10 @@
+import request from '@/utils/request'
+
+//
+export function listTable(query) {
+    return request({
+      url: '/tool/gen/list',
+      method: 'GET',
+      params: query
+  })
+}
