@@ -1,6 +1,5 @@
 const common = require('./webpack.common');
 const { merge } = require('webpack-merge');
-const { resolve } = require('./utils');
 const { dotEnvConfig } = require('./config');
 
 module.exports = merge(common, {
@@ -17,7 +16,9 @@ module.exports = merge(common, {
 		open: false,
 		compress: true, // 启动gzip压缩
 		hot: true, //开启HMR功能，只重新打包更改的文件
-		historyApiFallback: true, // 开启支持vue的history模式,需要publicPath设置对（不能不设置，路径不能错误）
+		// 开启支持vue的history模式,需要publicPath设置对（不能不设置，路径不能错误）
+		// 对于history来说 返回的index.html但是是基于请求路径返回的内容,那么publicPath就基于当前请求过来的路径进行js文件请求，所以publicPath要设置为'/'
+		historyApiFallback: true,
 		client: {
 			// 当出现编译错误或警告时，在浏览器中显示全屏覆盖。
 			overlay: {
