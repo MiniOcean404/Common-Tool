@@ -1,0 +1,14 @@
+node_modules/*
+dist/*
+upload/*
+
+./*.js
+*.scss
+postcss.config.js
+babel.config.js
+
+tsconfig.json
+package.json
+
+README.md
+yarn.lock

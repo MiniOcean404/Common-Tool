@@ -1,5 +1,4 @@
 const { resolve } = require('./utils');
-const { devMode, env } = require('./config');
 const common = require('./webpack.common');
 const { merge } = require('webpack-merge');
 
@@ -15,7 +14,8 @@ const TerserPlugin = require('terser-webpack-plugin');
 
 const mergeLate = merge(common, {
 	mode: 'production',
-	devtool: devMode ? false : 'eval-cheap-source-map',
+	// eval-cheap-source-map 结合webpack的真实代码位置
+	devtool: 'eval-cheap-source-map',
 	// 打包文件性能提示
 	performance: {
 		hints: false, // 枚举

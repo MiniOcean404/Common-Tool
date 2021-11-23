@@ -123,6 +123,7 @@ module.exports = {
 							{
 								loader: 'babel-loader',
 								options: {
+									sourceMap: true,
 									presets: ['@babel/preset-env'],
 									cacheDirectory: true, // true 或 地址
 								},
@@ -274,7 +275,10 @@ module.exports = {
 	},
 	plugins: [
 		// 设置全局变量
-		new DefinePlugin({ 'process.env': JSON.stringify(dotEnvConfig) }),
+		new DefinePlugin({
+			'process.env': JSON.stringify(dotEnvConfig),
+			'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+		}),
 		new HtmlWebpackPlugin({
 			template: resolve('public/index.html'),
 			filename: 'index.html',

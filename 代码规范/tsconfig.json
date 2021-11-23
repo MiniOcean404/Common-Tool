@@ -1,0 +1,21 @@
+{
+	"compilerOptions": {
+		"baseUrl": "./",
+		"paths": {
+			"@/*": ["src/*"],
+			"api/*": ["src/api/*"],
+			"assets/*": ["src/assets/*"],
+			"common/*": ["src/common/*"],
+			"views/*": ["src/views/*"],
+			"pages/*": ["src/pages/*"],
+			"components/*": ["src/components/*"],
+			"env/*": ["src/env/*"],
+			"store/*": ["src/store/*"],
+			"style/*": ["src/style/*"],
+			"static/*": ["src/static/*"]
+		},
+		"types": ["@dcloudio/types", "miniprogram-api-typings", "mini-types"]
+	},
+	"include": ["src/**/*"],
+	"exclude": ["node_modules"]
+}
