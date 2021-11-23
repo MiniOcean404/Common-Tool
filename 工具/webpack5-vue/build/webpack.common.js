@@ -1,5 +1,6 @@
 const { resolve } = require('./utils');
 const { devMode, dotEnvConfig, env } = require('./config');
+const pkg = require('../package.json');
 const chalk = require('chalk');
 
 const { DefinePlugin } = require('webpack');
@@ -36,13 +37,7 @@ const vueWorkerPool = {
 
 threadLoader.warmup(jsWorkerPool, ['cache-loader', 'babel-loader']);
 threadLoader.warmup(vueWorkerPool, ['cache-loader', 'vue-loader']);
-threadLoader.warmup(cssWorkerPool, [
-	'cache-loader',
-	'css-loader',
-	'postcss-loader',
-	'sass-loader',
-	'sass-resources-loader',
-]);
+threadLoader.warmup(cssWorkerPool, ['cache-loader', 'css-loader', 'postcss-loader', 'sass-loader']);
 
 module.exports = {
 	entry: {
@@ -75,6 +70,7 @@ module.exports = {
 			common: resolve('src/common'),
 			views: resolve('src/views'),
 			components: resolve('src/components'),
+			utils: resolve('src/utils'),
 		},
 		modules: ['node_modules'],
 		mainFields: ['jsnext:main', 'browser', 'main'],
@@ -95,6 +91,7 @@ module.exports = {
 							compilerOptions: {
 								preserveWhitespace: false, // 去除模板中的空格
 								cacheDirectory: './node_modules/.cache/vue-loader',
+								cacheIdentifier: `cache-loader:${pkg.version} ${env}`,
 							},
 						},
 					},
@@ -127,7 +124,7 @@ module.exports = {
 								loader: 'babel-loader',
 								options: {
 									presets: ['@babel/preset-env'],
-									cacheDirectory: './node_modules/.cache/js-loader',
+									cacheDirectory: true, // true 或 地址
 								},
 							},
 						],
@@ -142,16 +139,22 @@ module.exports = {
 						test: /\.(sa|sc|c)ss$/,
 						use: [
 							{
+								// * vue-style-loader 和 style-loader内部实现了css的hmr功能
+								loader: devMode ? 'vue-style-loader' : MiniCssExtractPlugin.loader,
+								options: devMode
+									? {
+											sourceMap: true,
+											shadowMode: false,
+									  }
+									: {
+											publicPath: '/',
+											esModule: false,
+									  },
+							},
+							{
 								loader: 'cache-loader',
 								options: {
 									cacheDirectory: './node_modules/.cache/css-loader',
-								},
-							},
-							{
-								// * vue-style-loader 和 style-loader内部实现了css的hmr功能
-								loader: devMode ? 'vue-style-loader' : MiniCssExtractPlugin.loader,
-								options: {
-									esModule: false,
 								},
 							},
 							//thread-loader 放在了 style-loader 之后，这是因为 thread-loader 后的 loader 没法存取文件也没法获取 webpack 的选项设置
@@ -163,6 +166,7 @@ module.exports = {
 								loader: 'css-loader',
 								options: {
 									importLoaders: 2,
+									sourceMap: true,
 									modules: {
 										// scss分享变量给js
 										// :export {
@@ -180,7 +184,6 @@ module.exports = {
 							},
 							{
 								loader: 'sass-loader',
-
 								options: {
 									// scss自动import全局文件
 									// 		additionalData: `
@@ -285,7 +288,7 @@ module.exports = {
 		new VueLoaderPlugin(),
 		new MiniCssExtractPlugin({
 			filename: devMode ? 'css/[name].css' : 'css/[name].[contenthash].css',
-			chunkFilename: devMode ? 'css/[id].css' : 'css/[id].[contenthash].css',
+			chunkFilename: devMode ? 'css/[name].css' : 'css/[name].[contenthash].css',
 			experimentalUseImportModule: false,
 		}),
 		new NodePolyfillPlugin(),

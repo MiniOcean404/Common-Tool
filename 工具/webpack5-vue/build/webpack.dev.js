@@ -8,7 +8,7 @@ module.exports = merge(common, {
 	// * 特点：只会在内存中编译打包，不会有任何输出（不会像之前那样在外面看到打包输出的build包，而是在内存中，关闭后会自动删除）
 	devServer: {
 		static: {
-			// 该配置项允许配置从目录提供静态文展示的选项（默认是 'public' 文件夹）。将其设置为 false 以禁用：
+			// 该配置项允许配置从目录提供静态文展示的选项
 			// directory: resolve('dist'),
 		},
 		port: dotEnvConfig.port,
@@ -27,16 +27,17 @@ module.exports = merge(common, {
 				// progress: true, // 在浏览器中以百分比显示编译进度。
 			},
 		},
-		// 设置代理
-		proxy: {
-			[dotEnvConfig.VUE_APP_BASE_API]: {
-				// 发送请求时，请求路径重写：将/api/xxx  --> /xxx （去掉/api）
-				target: 'http://10.20.150.60:8098',
-				pathRewrite: {
-					['^' + dotEnvConfig.VUE_APP_BASE_API]: '',
-				},
-			},
-		},
+		proxy: dotEnvConfig.VUE_APP_BASE_API
+			? {
+					[dotEnvConfig.VUE_APP_BASE_API]: {
+						// 发送请求时，请求路径重写：将/api/xxx  --> /xxx （去掉/api）
+						target: 'http://10.20.150.60:8098',
+						pathRewrite: {
+							['^' + dotEnvConfig.VUE_APP_BASE_API]: '',
+						},
+					},
+			  }
+			: {},
 	},
 	// 注意：Webpack升级到5.0后，target默认值值会根据package.json中的browserslist改变，导致devServer的自动更新失效。所以development环境下直接配置成web。
 	target: 'web',
