@@ -48,6 +48,73 @@
       </template>
     </Input>
 
+    <el-row :gutter="10" class="mb8">
+      <el-col :span="1.5">
+        <el-button
+          type="primary"
+          plain
+          icon="el-icon-plus"
+          size="mini"
+          @click="handleAdd"
+          v-hasPermi="['monitor:job:add']"
+        >
+          新增
+        </el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="success"
+          plain
+          icon="el-icon-edit"
+          size="mini"
+          :disabled="single"
+          @click="handleUpdate"
+          v-hasPermi="['monitor:job:edit']"
+        >
+          修改
+        </el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="danger"
+          plain
+          icon="el-icon-delete"
+          size="mini"
+          :disabled="multiple"
+          @click="handleDelete"
+          v-hasPermi="['monitor:job:remove']"
+        >
+          删除
+        </el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="warning"
+          plain
+          icon="el-icon-download"
+          size="mini"
+          :loading="exportLoading"
+          @click="handleExport"
+          v-hasPermi="['monitor:job:export']"
+        >
+          导出
+        </el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="info"
+          plain
+          icon="el-icon-s-operation"
+          size="mini"
+          @click="handleJobLog"
+          v-hasPermi="['monitor:job:query']"
+        >
+          日志
+        </el-button>
+      </el-col>
+      <right-toolbar :showSearch.sync="showSearch" @queryTable="requestDeploy"></right-toolbar>
+    </el-row>
+
     <Table
       :tableData="tableData"
       :OperateCol="OperateCol"
@@ -103,11 +170,13 @@
           width: '200',
           OperateColData: [{ name: '移除', color: '#409EFF' }],
         },
+
+        showSearch:true
       };
     },
     created() {
-      this.dataInit()
-      this.requestConfig()
+      this.dataInit();
+      this.requestDeploy();
     },
     methods: {
       // * 公司列表初始化
@@ -117,7 +186,7 @@
 
       // *----------------------------------处理页码，过滤函数
       // * 当前表格请求配置(查询，翻页调用)
-      requestConfig(current) {
+      requestDeploy(current) {
         const defaultDate = [
           {
             data: ['dateStart', 'dateEnd'],
