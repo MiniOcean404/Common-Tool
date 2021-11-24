@@ -46,6 +46,5 @@ module.exports = merge(common, {
 	},
 	// 注意：Webpack升级到5.0后，target默认值值会根据package.json中的browserslist改变，导致devServer的自动更新失效。所以development环境下直接配置成web。
 	target: 'web',
-	// source-map 真实代码位置
-	devtool: 'source-map',
+	devtool: 'source-map', // source-map 真实代码位置
 });

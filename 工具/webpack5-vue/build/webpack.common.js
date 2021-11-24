@@ -31,12 +31,7 @@ const cssWorkerPool = {
 	poolTimeout: 2000,
 };
 
-const vueWorkerPool = {
-	poolTimeout: 2000,
-};
-
 threadLoader.warmup(jsWorkerPool, ['cache-loader', 'babel-loader']);
-threadLoader.warmup(vueWorkerPool, ['cache-loader', 'vue-loader']);
 threadLoader.warmup(cssWorkerPool, ['cache-loader', 'css-loader', 'postcss-loader', 'sass-loader']);
 
 module.exports = {
@@ -81,10 +76,6 @@ module.exports = {
 			{
 				test: /\.vue$/,
 				use: [
-					{
-						loader: 'thread-loader',
-						options: vueWorkerPool,
-					},
 					{
 						loader: 'vue-loader',
 						options: {
@@ -186,24 +177,14 @@ module.exports = {
 							{
 								loader: 'sass-loader',
 								options: {
-									// scss自动import全局文件
-									// 		additionalData: `
-									//   @import "src/scss-vars.scss";
-									// `,
 									sassOptions: {
-										includePaths: [resolve()],
+										includePaths: [],
 									},
+									// 引入全局变量
+									additionalData:
+										'@import "@/assets/styles/_var.scss";@import "@/assets/styles/_mixins.scss";',
 								},
 							},
-							// {
-							// 	loader: 'sass-resources-loader',
-							// 	options: {
-							// 		resources: [
-							// 			resolve('src/assets/styles/variables.scss'),
-							// 			resolve('src/assets/styles/mixin.scss'),
-							// 		],
-							// 	},
-							// },
 						],
 					},
 					{
