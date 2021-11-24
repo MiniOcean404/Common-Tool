@@ -8,9 +8,10 @@ const CopyWebpackPlugin = require('copy-webpack-plugin'); //拷贝静态资源
 const SpeedMeasurePlugin = require('speed-measure-webpack-plugin');
 const WebpackBuildNotifierPlugin = require('webpack-build-notifier'); // 打包提示
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
-const smp = new SpeedMeasurePlugin();
-
 const TerserPlugin = require('terser-webpack-plugin');
+const ProgressBarPlugin = require('progress-bar-webpack-plugin');
+const chalk = require('chalk');
+const smp = new SpeedMeasurePlugin();
 
 const mergeLate = merge(common, {
 	mode: 'production',
@@ -24,7 +25,7 @@ const mergeLate = merge(common, {
 		type: 'filesystem', //保存位置，开发环境下默认为memory类型，生产环境cache配置默认是关闭的。
 		buildDependencies: {
 			config: [__filename],
-			cacheDirectory: [resolve('node_modules/.webpack-cache')],
+			cacheDirectory: [resolve('node_modules/.cache')],
 		},
 	},
 	optimization: {
@@ -146,6 +147,7 @@ const mergeLate = merge(common, {
 				},
 			],
 		}),
+		new ProgressBarPlugin({ format: `:msg [:bar] ${chalk.blue.bold(':percent')} (:elapsed s)` }),
 	],
 });
 

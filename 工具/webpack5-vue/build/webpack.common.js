@@ -282,10 +282,19 @@ module.exports = {
 			template: resolve('public/index.html'),
 			filename: 'index.html',
 			title: dotEnvConfig.VUE_APP_TITLE || '.env中未配置',
+			inject: true, // 自动决定将引入内容添加到哪里
 			// 对html进行压缩
 			minify: {
 				collapseWhitespace: true, // 去掉空格
 				removeComments: true, // 去掉注释
+				removeRedundantAttributes: true,
+				useShortDoctype: true,
+				removeEmptyAttributes: true,
+				removeStyleLinkTypeAttributes: true,
+				keepClosingSlash: true,
+				minifyJS: true,
+				minifyCSS: true,
+				minifyURLs: true,
 			},
 		}),
 		new VueLoaderPlugin(),
@@ -295,7 +304,6 @@ module.exports = {
 			experimentalUseImportModule: false,
 		}),
 		new NodePolyfillPlugin(),
-		new ProgressBarPlugin({ format: `:msg [:bar] ${chalk.blue.bold(':percent')} (:elapsed s)` }),
 		// new HardSourceWebpackPlugin(),
 		// new HardSourceWebpackPlugin.ExcludeModulePlugin([]),
 	],
