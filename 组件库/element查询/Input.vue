@@ -1,6 +1,8 @@
 <template>
 	<div class="up_content">
-		<slot name="up" v-bind:queryData="queryData"></slot>
+		<div class="content">
+      <slot name="up" v-bind:queryData="queryData" ></slot>
+    </div>
 
 		<div class="button">
 			<slot name="button"></slot>
@@ -21,11 +23,11 @@ export default {
 		queryData: {
 			type: Object,
 			default() {
-				return {}
-			}
-		}
-	}
-}
+				return {};
+			},
+		},
+	},
+};
 </script>
 
 <style lang="scss" scoped>

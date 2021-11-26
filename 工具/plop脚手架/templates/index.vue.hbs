@@ -61,57 +61,6 @@
           新增
         </el-button>
       </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="success"
-          plain
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['monitor:job:edit']"
-        >
-          修改
-        </el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="danger"
-          plain
-          icon="el-icon-delete"
-          size="mini"
-          :disabled="multiple"
-          @click="handleDelete"
-          v-hasPermi="['monitor:job:remove']"
-        >
-          删除
-        </el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="warning"
-          plain
-          icon="el-icon-download"
-          size="mini"
-          :loading="exportLoading"
-          @click="handleExport"
-          v-hasPermi="['monitor:job:export']"
-        >
-          导出
-        </el-button>
-      </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="info"
-          plain
-          icon="el-icon-s-operation"
-          size="mini"
-          @click="handleJobLog"
-          v-hasPermi="['monitor:job:query']"
-        >
-          日志
-        </el-button>
-      </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="requestDeploy"></right-toolbar>
     </el-row>
 

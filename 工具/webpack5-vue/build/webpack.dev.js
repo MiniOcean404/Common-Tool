@@ -20,18 +20,19 @@ module.exports = merge(common, {
 		// 对于history来说 返回的index.html但是是基于请求路径返回的内容,那么publicPath就基于当前请求过来的路径进行js文件请求，所以publicPath要设置为'/'
 		historyApiFallback: true,
 		client: {
+			progress: true, // 在浏览器中以百分比显示编译进度。
+			logging: 'none',
 			// 当出现编译错误或警告时，在浏览器中显示全屏覆盖。
 			overlay: {
 				errors: true,
 				warnings: false,
-				// progress: true, // 在浏览器中以百分比显示编译进度。
 			},
 		},
 		proxy: dotEnvConfig.VUE_APP_BASE_API
 			? {
 					[dotEnvConfig.VUE_APP_BASE_API]: {
 						// 发送请求时，请求路径重写：将/api/xxx  --> /xxx （去掉/api）
-						target: 'http://10.20.150.60:8098',
+						target: 'http://10.20.171.65:8089',
 						pathRewrite: {
 							['^' + dotEnvConfig.VUE_APP_BASE_API]: '',
 						},

@@ -1,26 +1,26 @@
 import request from '@/utils/request'
 
 //
-export function listTable(query) {
-    return request({
-      url: '/tool/gen/list',
-      method: 'GET',
-      params: query
-  })
+export function getProduct(query) {
+  return request({
+    url: '/productFactor/productList',
+    method: 'POST',
+    data: query,
+  });
 }
 
-export function getProduct(query) {
+export function listTable(query) {
   return request({
     url: '/tool/gen/list',
     method: 'GET',
-    params: query
-  })
+    params: query,
+  });
 }
 
 export function companyInfo(query) {
   return request({
     url: '/tool/gen/list',
     method: 'GET',
-    params: query
-  })
+    params: query,
+});
 }

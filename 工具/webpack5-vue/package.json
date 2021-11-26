@@ -15,9 +15,7 @@
     "webpack-serve-online": "cross-env NODE_ENV=online webpack serve --config build/webpack.dev.js",
     "webpack-serve-dev": "cross-env NODE_ENV=development webpack-dev-server --config build/webpack.dev.js",
     "webpack-build": "cross-env NODE_ENV=production webpack --config  build/webpack.prd.js ",
-    "serve:vite": "vite --mode online",
-    "build:vite": "vite build --mode online",
-    "preview:vite": "vite preview"
+    "webpack-build-dll": "webpack --config  build/webpack.dll.js "
   },
   "dependencies": {
     "@babel/core": "^7.16.0",
@@ -71,6 +69,7 @@
   },
   "devDependencies": {
     "@riophae/vue-treeselect": "0.4.0",
+    "@vitejs/plugin-vue": "^1.10.0",
     "@vue/cli-plugin-babel": "^4.5.15",
     "@vue/cli-plugin-eslint": "4.5.15",
     "@vue/cli-plugin-router": "~4.5.0",

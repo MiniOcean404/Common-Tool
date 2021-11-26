@@ -2,7 +2,7 @@ module.exports = {
 	useTabs: true, //使用tab缩进，默认false
 	tabWidth: 2, //tab缩进大小,默认为2
 	semi: true, //使用分号,默认true
-	printWidth: 100, //超过最大值换行
+	printWidth: 120, //超过最大值换行
 	proseWrap: 'never',
 	trailingComma: 'all', //确保对象的最后一个属性后会有一个逗号
 	singleQuote: true, //使用单引号,默认false(在jsx中配置无效,默认都是双引号)

@@ -1,14 +1,16 @@
 <template>
 	<el-table
-		:cell-style="cellColor"
 		:data="tableData.resultData"
 		:height="height"
 		:highlight-current-row="isRadio"
-		border
+		:border="false"
+		header-align="center"
 		style="width: 100%"
+		:cell-style="cellColor"
 		@row-click="tableClick"
-		@current-change="handleSelectionChange"
-		@selection-change="handleSelectionChange"
+		@current-change="choiceSingleMultiple"
+		@selection-change="choiceSingleMultiple"
+		@row-dblclick="rowDBClick"
 	>
 		<!--多选-->
 		<el-table-column
@@ -24,39 +26,46 @@
 			v-if="isIndex"
 			align="center"
 			header-align="center"
-			label="序号"
+			label="任务编号"
 			type="index"
-			width="50"
+			width="100"
 		></el-table-column>
 
 		<!--内容列-->
 		<el-table-column
 			v-for="(item, index) in tableData.needData"
-			:key="index"
-			:label="item[1]"
+			:key="item[1]"
 			:prop="item[0]"
+			:label="item[1]"
 			:width="item[2]"
 			align="center"
 			header-align="center"
 		>
 			<template slot-scope="scope">
 				<span
+					v-show="!isShowInput"
 					:style="{ color: item[3], cursor: item[4] ? 'pointer' : 'normal' }"
-					@click.stop="handleRowClick(item[4], scope.row)"
+					@click.stop="elementClick(item[4], scope, item[0])"
+					@dblclick.stop="elementDbClick(scope)"
 				>
-					{{ item[5] === true ? item[6] : scope.row[item[0]] }}
+					{{ item[5] ? item[5] : scope.row[item[0]] }}
 				</span>
+
+				<!--用于自定义表格内数据-->
+				<div v-show="isShowInput">
+					<slot name="custom" v-bind:scope="scope" v-bind:rowKey="item[0]"></slot>
+				</div>
 			</template>
 		</el-table-column>
 
-		<div v-if="OperateCol.isOperateCol">
-			<!--操作列-->
+		<!--操作列-->
+		<div v-if="OperateCol">
 			<el-table-column
 				:label="OperateCol.colName"
-				:width="OperateColWidth"
+				:width="OperateCol.width"
+				header-align="center"
 				align="center"
 				fixed="right"
-				header-align="center"
 			>
 				<template slot-scope="scope">
 					<el-button
@@ -65,7 +74,7 @@
 						:key="item.name"
 						size="small"
 						type="text"
-						@click.native.prevent="operateHandle(scope.$index, scope.row, item.name)"
+						@click.native.prevent="colClick(scope.$index, scope.row, item.name)"
 					>
 						<span :style="{ color: item.color }">{{ item.name }}</span>
 					</el-button>
@@ -79,6 +88,7 @@
 export default {
 	name: 'Table',
 	props: {
+		// * 表格数据，查询数据以及展示数据
 		tableData: {
 			type: Object,
 			default() {
@@ -91,114 +101,138 @@ export default {
 							province: '上海',
 							city: '普陀区',
 							address: '上海市普陀区金沙江路 1518 弄',
-							zip: 200333
-						}
+							zip: 200333,
+						},
 					],
-					// todo 字段名 显示名字 列宽度
+					// * 字段名 显示名字 列宽度 颜色 是否需要点击事件 操作列名
 					needData: [
 						['agentName', '代理人', '', '#409EFF', true, false],
-						['agentName', '代理人', '', '#409EFF', true, false]
-					]
-				}
-			}
+						['', '操作', '', '#409EFF', true, '修改'],
+					],
+				};
+			},
 		},
-		// todo 操作列自定义
+		// * 悬浮操作列自定义
 		OperateCol: {
 			type: Object,
 			default() {
 				return {
-					isOperateCol: false,
 					colName: '操作',
-					OperateColData: [{ name: '移除', color: '#409EFF' }]
-				}
-			}
-		},
-		// todo 操作列宽度
-		OperateColWidth: {
-			type: String,
-			default: '200'
+					width: '200',
+					OperateColData: [{ name: '移除', color: '#409EFF' }],
+				};
+			},
 		},
 
+		// 是否展示输入框
+		isShowInput: {
+			type: Boolean,
+			default: false,
+		},
+
+		// * 是否需要过滤按钮
 		buttonIsFilter: {
 			type: Boolean,
-			default: false
+			default: false,
 		},
-		// todo 需要展示的按钮
+
+		// * 需要展示的按钮
 		needButton: {
 			type: Object,
 			default() {
 				return {
 					field: '',
 					controlShow: [],
-					button: []
-				}
-			}
+					button: [],
+				};
+			},
 		},
+
+		// 表格高度
 		height: {
 			type: String,
-			default: '530px'
+			default: '600px',
 		},
+
+		// 是否需要序号列
 		isIndex: {
 			type: Boolean,
-			default: true
+			default: true,
 		},
+
+		// 是否需要复选框
 		isCheckbox: {
 			type: Boolean,
-			default: false
+			default: false,
 		},
+
+		// 是否需要单选框
 		isRadio: {
 			type: Boolean,
-			default: false
-		}
+			default: false,
+		},
+	},
+	data() {
+		return {};
 	},
 	computed: {},
 	methods: {
-		// todo 操作列方式
-		operateHandle(index, rows, currentCol) {
-			this.$emit('operateHandle', index, rows, currentCol)
-		},
-
-		// todo 单选多选方式
-		handleSelectionChange(val) {
-			this.$emit('handleSelectionChange', val)
-		},
-
-		// todo 表格中另外的点击
-		handleRowClick(isClick, row) {
+		// * 表格中元素的单击
+		elementClick(isClick, row, colName) {
 			if (isClick) {
-				this.$emit('cell-click', row)
+				this.$emit('cell-click', row, colName);
 			}
 		},
 
-		// todo 控制是否展示条件中的按钮
+		// * 表格中元素的双击
+		elementDbClick(scope) {
+			this.$emit('ele-db-click', scope);
+		},
+
+		// * 某一行的双击
+		rowDBClick(row, col, e) {
+			this.$emit('row-dblclick', row, col, e);
+		},
+
+		// * 单选多选方式
+		choiceSingleMultiple(val) {
+			this.$emit('choice-single-multiple', val);
+		},
+
+		// * 操作列点击
+		colClick(index, rows, currentCol) {
+			this.$emit('operate-col', index, rows, currentCol);
+		},
+
+		// * 控制是否展示条件中的按钮
 		isShowButton(scope, name) {
-			if (this.buttonIsFilter === false) return true
+			if (this.buttonIsFilter === false) return true;
 
-			if (this.buttonIsFilter === true) {
-				const value = scope.row[this.needButton.field]
-				const isShowArr = this.needButton.controlShow
-				const buttonArr = this.needButton.button
+			if (this.buttonIsFilter) {
+				const value = scope.row[this.needButton.field];
+				const isShowArr = this.needButton.controlShow;
+				const buttonArr = this.needButton.button;
 
-				const a = isShowArr.findIndex(item => {
-					return item === value
-				})
+				const a = isShowArr.findIndex((item) => {
+					return item === value;
+				});
 
 				if (a === -1) {
-					return true
+					return true;
 				} else if (a > -1) {
-					const b = buttonArr.findIndex(item => {
-						return item === name
-					})
-					return b > -1
+					const b = buttonArr.findIndex((item) => {
+						return item === name;
+					});
+					return b > -1;
 				}
 			}
 		},
 
 		cellColor(row) {},
 
-		tableClick(row, column, cell, event) {}
-	}
-}
+		tableClick(row, column, cell, event) {},
+	},
+};
 </script>
 
 <style lang="less" scoped></style>
