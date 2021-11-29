@@ -13,7 +13,7 @@
     "lint": "eslint --ext .js,.vue src",
     "create-page": "plop",
     "webpack-serve-online": "cross-env NODE_ENV=online webpack serve --config build/webpack.dev.js",
-    "webpack-serve-dev": "cross-env NODE_ENV=development webpack-dev-server --config build/webpack.dev.js",
+    "webpack-serve-dev": "cross-env NODE_ENV=development webpack-dev-server --config build/webpack.dev.js --max-old-space-size=4096",
     "webpack-build": "cross-env NODE_ENV=production webpack --config  build/webpack.prd.js ",
     "webpack-build-dll": "webpack --config  build/webpack.dll.js "
   },

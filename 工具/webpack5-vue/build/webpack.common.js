@@ -69,6 +69,9 @@ module.exports = {
 		},
 		modules: ['node_modules'],
 		mainFields: ['jsnext:main', 'browser', 'main'],
+		fallback: {
+			path: require.resolve('path-browserify'),
+		},
 	},
 	externals: {},
 	module: {
@@ -181,8 +184,7 @@ module.exports = {
 										includePaths: [],
 									},
 									// 引入全局变量
-									additionalData:
-										'@import "@/assets/styles/_var.scss";@import "@/assets/styles/_mixins.scss";',
+									additionalData: '@import "@/assets/styles/_var.scss";@import "@/assets/styles/_mixins.scss";',
 								},
 							},
 						],
@@ -279,12 +281,7 @@ module.exports = {
 			},
 		}),
 		new VueLoaderPlugin(),
-		new MiniCssExtractPlugin({
-			filename: devMode ? 'css/[name].css' : 'css/[name].[contenthash].css',
-			chunkFilename: devMode ? 'css/[name].css' : 'css/[name].[contenthash].css',
-			experimentalUseImportModule: false,
-		}),
-		new NodePolyfillPlugin(),
+		// new NodePolyfillPlugin(), //使用插件包含所有或者手动添加
 		// new HardSourceWebpackPlugin(),
 		// new HardSourceWebpackPlugin.ExcludeModulePlugin([]),
 	],

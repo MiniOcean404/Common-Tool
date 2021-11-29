@@ -11,6 +11,8 @@ const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const ProgressBarPlugin = require('progress-bar-webpack-plugin');
 const chalk = require('chalk');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const { devMode } = require('./config');
 const smp = new SpeedMeasurePlugin();
 
 const mergeLate = merge(common, {
@@ -148,6 +150,11 @@ const mergeLate = merge(common, {
 			],
 		}),
 		new ProgressBarPlugin({ format: `:msg [:bar] ${chalk.blue.bold(':percent')} (:elapsed s)` }),
+		new MiniCssExtractPlugin({
+			filename: devMode ? 'css/[name].css' : 'css/[name].[contenthash].css',
+			chunkFilename: devMode ? 'css/[name].css' : 'css/[name].[contenthash].css',
+			experimentalUseImportModule: false,
+		}),
 	],
 });
 
