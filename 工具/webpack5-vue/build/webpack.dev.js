@@ -16,6 +16,7 @@ module.exports = merge(common, {
 			paths: ['src/**/*', 'public/**/*'],
 			options: {
 				usePolling: false, // 是否轮询
+				ignored: '/node_modules/', // 忽略监视的文件
 			},
 		},
 		// host: '127.0.0.1', // 域名
