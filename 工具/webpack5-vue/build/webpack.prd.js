@@ -17,7 +17,7 @@ const smp = new SpeedMeasurePlugin();
 
 const mergeLate = merge(common, {
 	mode: 'production',
-	// eval-cheap-source-map 结合webpack的真实代码位置
+	// eval-cheap-source-map 结合webpack的真实代码位置 source-map 源代码映射
 	devtool: 'eval-cheap-source-map',
 	// 打包文件性能提示
 	performance: {
