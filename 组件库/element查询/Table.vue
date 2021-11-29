@@ -1,5 +1,6 @@
 <template>
 	<el-table
+		ref="custom-table"
 		:data="tableData.resultData"
 		:height="height"
 		:highlight-current-row="isRadio"
@@ -85,6 +86,8 @@
 </template>
 
 <script>
+import { debounce } from './utils';
+
 export default {
 	name: 'Table',
 	props: {
@@ -176,6 +179,9 @@ export default {
 		return {};
 	},
 	computed: {},
+	mounted() {
+		window.addEventListener('resize', debounce(this.resizeRepaint, 150));
+	},
 	methods: {
 		// * 表格中元素的单击
 		elementClick(isClick, row, colName) {
@@ -231,6 +237,10 @@ export default {
 		cellColor(row) {},
 
 		tableClick(row, column, cell, event) {},
+
+		resizeRepaint() {
+			this.$refs['custom-table'].doLayout();
+		},
 	},
 };
 </script>
