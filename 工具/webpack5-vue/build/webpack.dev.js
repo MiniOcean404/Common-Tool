@@ -11,6 +11,14 @@ module.exports = merge(common, {
 			// 该配置项允许配置从目录提供静态文展示的选项
 			// directory: resolve('dist'),
 		},
+		// 监听文件
+		watchFiles: {
+			paths: ['src/**/*', 'public/**/*'],
+			options: {
+				usePolling: false, // 是否轮询
+			},
+		},
+		// host: '127.0.0.1', // 域名
 		port: dotEnvConfig.port,
 		server: 'http',
 		open: false,
@@ -19,14 +27,25 @@ module.exports = merge(common, {
 		// 开启支持vue的history模式,需要publicPath设置对（不能不设置，路径不能错误）
 		// 对于history来说 返回的index.html但是是基于请求路径返回的内容,那么publicPath就基于当前请求过来的路径进行js文件请求，所以publicPath要设置为'/'
 		historyApiFallback: true,
+		// 在浏览器中
 		client: {
-			progress: true, // 在浏览器中以百分比显示编译进度。
+			progress: true, // 以百分比显示编译进度。
 			logging: 'none',
 			// 当出现编译错误或警告时，在浏览器中显示全屏覆盖。
 			overlay: {
 				errors: true,
 				warnings: false,
 			},
+		},
+		//端口连接时执行函数
+		onListening: (devServer) => {
+			if (!devServer) throw new Error('webpack-dev-server is not defined');
+
+			console.log('Listening on port:', devServer.server.address().port);
+		},
+		// 其他中间件之后执行函数
+		onAfterSetupMiddleware: (devServer) => {
+			if (!devServer) throw new Error('webpack-dev-server is not defined');
 		},
 		proxy: dotEnvConfig.VUE_APP_BASE_API
 			? {
