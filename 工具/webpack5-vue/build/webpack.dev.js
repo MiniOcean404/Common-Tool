@@ -6,7 +6,7 @@ module.exports = merge(common, {
 	mode: 'development',
 	// 注意：Webpack升级到5.0后，target默认值值会根据package.json中的browserslist改变，导致devServer的自动更新失效。所以development环境下直接配置成web。
 	target: 'web',
-	devtool: 'eval',
+	devtool: 'eval', // 内存溢出关闭source-map
 	// * 开发服务器 devServer：用来自动化，不用每次修改后都重新输入webpack打包一遍（自动编译，自动打开浏览器，自动刷新浏览器）
 	// * 特点：只会在内存中编译打包，不会有任何输出（不会像之前那样在外面看到打包输出的build包，而是在内存中，关闭后会自动删除）
 	devServer: {
