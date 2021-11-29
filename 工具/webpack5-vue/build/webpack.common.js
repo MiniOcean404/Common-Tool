@@ -69,9 +69,10 @@ module.exports = {
 		},
 		modules: ['node_modules'],
 		mainFields: ['jsnext:main', 'browser', 'main'],
-		fallback: {
-			path: require.resolve('path-browserify'),
-		},
+		// fallback: {
+		// 	path: require.resolve('path-browserify'),
+		// 	process: require.resolve('process/browser'),
+		// },
 	},
 	externals: {},
 	module: {
@@ -153,10 +154,12 @@ module.exports = {
 								},
 							},
 							//thread-loader 放在了 style-loader 之后，这是因为 thread-loader 后的 loader 没法存取文件也没法获取 webpack 的选项设置
-							{
-								loader: 'thread-loader',
-								options: cssWorkerPool,
-							},
+							// devMode
+							// 	? {}
+							// 	: {
+							// 			loader: 'thread-loader',
+							// 			options: cssWorkerPool,
+							// 	  },
 							{
 								loader: 'css-loader',
 								options: {
@@ -281,7 +284,7 @@ module.exports = {
 			},
 		}),
 		new VueLoaderPlugin(),
-		// new NodePolyfillPlugin(), //使用插件包含所有或者手动添加
+		new NodePolyfillPlugin(), //使用插件包含所有或者手动添加
 		// new HardSourceWebpackPlugin(),
 		// new HardSourceWebpackPlugin.ExcludeModulePlugin([]),
 	],
