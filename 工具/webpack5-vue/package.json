@@ -12,10 +12,10 @@
     "build:prod": "vue-cli-service build --mode production",
     "lint": "eslint --ext .js,.vue src",
     "create-page": "plop",
-    "webpack-serve-online": "cross-env NODE_ENV=online webpack serve --config build/webpack.dev.js",
-    "webpack-serve-dev": "cross-env NODE_ENV=development webpack-dev-server --config build/webpack.dev.js --max-old-space-size=4096",
+    "webpack-serve-online": "cross-env NODE_ENV=online webpack serve  --config build/webpack.dev.js ",
+    "webpack-serve-dev": "cross-env NODE_ENV=development webpack serve --config build/webpack.dev.js",
     "webpack-build": "cross-env NODE_ENV=production webpack --config  build/webpack.prd.js ",
-    "webpack-build-dll": "webpack --config  build/webpack.dll.js "
+    "webpack-build-dll": "webpack --config  build/webpack.dll.js"
   },
   "dependencies": {
     "@babel/core": "^7.16.0",
@@ -48,7 +48,7 @@
     "sass-resources-loader": "^2.2.4",
     "script-ext-html-webpack-plugin": "2.1.5",
     "speed-measure-webpack-plugin": "^1.5.0",
-    "svg-sprite-loader": "5.1.1",
+    "svg-sprite-loader": "6.0.11",
     "terser-webpack-plugin": "^5.2.5",
     "thread-loader": "^3.0.4",
     "uglifyjs-webpack-plugin": "^2.2.0",
