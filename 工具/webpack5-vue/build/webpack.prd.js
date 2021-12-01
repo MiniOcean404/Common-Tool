@@ -25,9 +25,11 @@ const mergeLate = merge(common, {
 	},
 	cache: {
 		type: 'filesystem', //保存位置，开发环境下默认为memory类型，生产环境cache配置默认是关闭的。
+		// 生产环境下默认的缓存存放目录在 node_modules/.cache/webpack/default-production 中，如果想要修改，可通过配置 name，来实现分类存放。如设置 name: 'production-cache' 时生成的缓存
+		name: 'production-cache',
+		cacheDirectory: resolve('node_modules/.cache/webpack'),
 		buildDependencies: {
 			config: [__filename],
-			cacheDirectory: [resolve('node_modules/.cache')],
 		},
 	},
 	optimization: {
@@ -149,7 +151,7 @@ const mergeLate = merge(common, {
 				},
 			],
 		}),
-		new ProgressBarPlugin({ format: `:msg [:bar] ${chalk.blue.bold(':percent')} (:elapsed s)` }),
+		ProgressBarPlugin({ format: `:msg [:bar] ${chalk.blue.bold(':percent')} (:elapsed s)` }),
 		new MiniCssExtractPlugin({
 			filename: devMode ? 'css/[name].css' : 'css/[name].[contenthash].css',
 			chunkFilename: devMode ? 'css/[name].css' : 'css/[name].[contenthash].css',

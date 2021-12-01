@@ -1,7 +1,6 @@
 const { resolve } = require('./utils');
 const { devMode, dotEnvConfig, env } = require('./config');
 const pkg = require('../package.json');
-const chalk = require('chalk');
 
 const { DefinePlugin } = require('webpack');
 // HtmlWebpackPlugin帮助你创建html文件，并自动引入打包输出的bundles文件。支持html压缩。
