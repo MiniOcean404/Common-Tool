@@ -13,20 +13,21 @@ const { VueLoaderPlugin } = require('vue-loader');
 const ProgressBarPlugin = require('progress-bar-webpack-plugin'); //进度条
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const threadLoader = require('thread-loader');
+const webpack = require('webpack');
 // const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 const jsWorkerPool = {
 	// 产生的 worker 的数量，默认是 (cpu 核心数 - 1)
 	// 当 require('os').cpus() 是 undefined 时，则为 1
 	// workers: 2,
+	// 一个 worker 进程中并行执行工作的数量
+	// 默认为 20
+	// workerParallelJobs: 2,
 	// 闲置时定时删除 worker 进程,默认为 500ms,可以设置为无穷大， 这样在监视模式(--watch)下可以保持 worker 持续存在
 	poolTimeout: 2000,
 };
 
 const cssWorkerPool = {
-	// 一个 worker 进程中并行执行工作的数量
-	// 默认为 20
-	// workerParallelJobs: 2,
 	poolTimeout: 2000,
 };
 
@@ -73,7 +74,40 @@ module.exports = {
 		// 	process: require.resolve('process/browser'),
 		// },
 	},
+	// WebAssembly 被设计为一种面向 web 的二进制的格式文件，以其更接近于机器码而拥有着更小的文件体积和更快速的执行效率。c/c++ 等高级语言都能直接编译成 .wasm 文件而被 js 调用。
+	experiments: {
+		asyncWebAssembly: true,
+	},
 	externals: {},
+	plugins: [
+		// 设置全局变量
+		new DefinePlugin({
+			'process.env': JSON.stringify(dotEnvConfig),
+		}),
+		new HtmlWebpackPlugin({
+			template: resolve('public/index.html'),
+			filename: 'index.html',
+			title: dotEnvConfig.VUE_APP_TITLE || '.env中未配置',
+			inject: true, // 自动决定将引入内容添加到哪里
+			// 对html进行压缩
+			minify: {
+				collapseWhitespace: true, // 去掉空格
+				removeComments: true, // 去掉注释
+				removeRedundantAttributes: true,
+				useShortDoctype: true,
+				removeEmptyAttributes: true,
+				removeStyleLinkTypeAttributes: true,
+				keepClosingSlash: true,
+				minifyJS: true,
+				minifyCSS: true,
+				minifyURLs: true,
+			},
+		}),
+		new VueLoaderPlugin(),
+		new NodePolyfillPlugin(), //使用插件包含所有或者手动添加
+		// new HardSourceWebpackPlugin(),
+		// new HardSourceWebpackPlugin.ExcludeModulePlugin([]), // webpack自带缓存
+	],
 	module: {
 		rules: [
 			{
@@ -107,6 +141,10 @@ module.exports = {
 			{
 				// * oneOf 匹配一个loader后就不往下进行处理（同一个文件只能匹配一个）
 				oneOf: [
+					{
+						test: /\.wasm$/,
+						type: 'webassembly/async',
+					},
 					{
 						test: /\.js$/,
 						use: [
@@ -191,100 +229,119 @@ module.exports = {
 							},
 						],
 					},
+					// * webpack5
 					{
 						test: /\.svg$/,
-						exclude: resolve('src/assets/icons'),
-						type: 'javascript/auto',
-						loader: 'file-loader',
-						options: {
-							limit: 4 * 1024,
-							name: 'svg/svg.[contenthash:8].[ext]',
+						type: 'asset',
+						generator: {
+							// 输出文件位置以及文件名
+							filename: 'svg/svg.[contenthash:8][ext]',
 						},
-					},
-					{
-						test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/, //媒体文件
-						exclude: /\.(html|js|ts|css|less|jpg|png|gif)/,
-						type: 'javascript/auto',
-						loader: 'url-loader',
-						options: {
-							limit: 4 * 1024,
-							name: 'media/media.[contenthash:8].[ext]',
-							fallback: {
-								loader: 'file-loader',
-								options: {
-									name: 'media/[name].[contenthash:8].[ext]',
-								},
+						parser: {
+							dataUrlCondition: {
+								maxSize: 10 * 1024, //超过10kb不转base64
 							},
 						},
 					},
 					{
-						test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/i, //媒体文件
-						exclude: /\.(html|js|ts|css|less|jpg|png|gif)/,
-						type: 'javascript/auto',
-						loader: 'file-loader',
-						options: {
-							limit: 4 * 1024,
-							name: 'fonts/font.[hash:8].[ext]',
-							fallback: {
-								loader: 'file-loader',
-								options: {
-									name: 'fonts/font.[contenthash:8].[ext]',
-								},
-							},
-						},
-					},
-					{
-						// url-loader：处理图片资源，问题：默认处理不了html中的img图片
+						// 默认会根据文件大小来选择使用哪种类型，当文件小于 8 KB 的时候会使用 asset/inline，否则会使用 asset/resource。也可手动进行阈值的设定
 						test: /\.(png|jpe?g|gif|webp)(\?.*)?$/,
-						// 需要下载 url-loader file-loader
-						loader: 'url-loader',
-						type: 'javascript/auto', // webpack5新增type: "asset"内置模块，使用原来的方式需要加上这条
-						options: {
-							// 图片大小小于8kb，就会被base64处理，优点：减少请求数量（减轻服务器压力），缺点：图片体积会更大（文件请求速度更慢）
-							// base64在客户端本地解码所以会减少服务器压力，如果图片过大还采用base64编码会导致cpu调用率上升，网页加载时变卡
-							limit: 4 * 1024,
-							// 给图片重命名，[hash:10]：取图片的hash的前10位，[ext]：取文件原来扩展名
-							name: 'img/img.[contenthash:8].[ext]',
-							esModule: false,
-							fallback: {
-								loader: 'file-loader',
-								options: {
-									name: 'img/[name].[contenthash:8].[ext]',
-								},
+						type: 'asset',
+						generator: {
+							// 输出文件位置以及文件名
+							filename: 'img/[name].[contenthash:8][ext]',
+						},
+						parser: {
+							dataUrlCondition: {
+								maxSize: 10 * 1024, //超过10kb不转base64
 							},
 						},
 					},
+					{
+						// 相当于file-loader
+						test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/, //字体文件
+						type: 'asset/resource',
+						generator: {
+							// 输出文件位置以及文件名
+							filename: 'media/media.[contenthash:8][ext]',
+						},
+					},
+					{
+						// 相当于file-loader
+						test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/i, //字体文件
+						type: 'asset/resource',
+						generator: {
+							// 输出文件位置以及文件名
+							filename: 'fonts/font.[contenthash:8][ext]',
+						},
+					},
+
+					// * webpack4
+					// {
+					// 	test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/i, //字体文件
+					// 	exclude: /\.(html|js|ts|css|less|jpg|png|gif)/,
+					// 	type: 'javascript/auto',
+					// 	loader: 'file-loader',
+					// 	options: {
+					// 		limit: 4 * 1024,
+					// 		name: 'fonts/font.[hash:8].[ext]',
+					// 		fallback: {
+					// 			loader: 'file-loader',
+					// 			options: {
+					// 				name: 'fonts/font.[contenthash:8].[ext]',
+					// 			},
+					// 		},
+					// 	},
+					// },
+					// {
+					// 	// url-loader：处理图片资源，问题：默认处理不了html中的img图片
+					// 	test: /\.(png|jpe?g|gif|webp)(\?.*)?$/,
+					// 	// 需要下载 url-loader file-loader
+					// 	loader: 'url-loader',
+					// 	type: 'javascript/auto', // webpack5新增type: "asset"内置模块，使用原来的方式需要加上这条
+					// 	options: {
+					// 		// 图片大小小于8kb，就会被base64处理，优点：减少请求数量（减轻服务器压力），缺点：图片体积会更大（文件请求速度更慢）
+					// 		// base64在客户端本地解码所以会减少服务器压力，如果图片过大还采用base64编码会导致cpu调用率上升，网页加载时变卡
+					// 		limit: 4 * 1024,
+					// 		// 给图片重命名，[hash:10]：取图片的hash的前10位，[ext]：取文件原来扩展名
+					// 		name: 'img/img.[contenthash:8].[ext]',
+					// 		esModule: false,
+					// 		fallback: {
+					// 			loader: 'file-loader',
+					// 			options: {
+					// 				name: 'img/[name].[contenthash:8].[ext]',
+					// 			},
+					// 		},
+					// 	},
+					// },
+					// {
+					// 	test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
+					// 	exclude: /\.(html|js|ts|css|less|jpg|png|gif)/,
+					// 	type: 'javascript/auto',
+					// 	loader: 'url-loader',
+					// 	options: {
+					// 		limit: 4 * 1024,
+					// 		name: 'media/media.[contenthash:8].[ext]',
+					// 		fallback: {
+					// 			loader: 'file-loader',
+					// 			options: {
+					// 				name: 'media/[name].[contenthash:8].[ext]',
+					// 			},
+					// 		},
+					// 	},
+					// },
+					// {
+					//   test: /\.svg$/,
+					//   exclude: resolve('src/assets/icons'),
+					//   type: 'javascript/auto',
+					//   loader: 'file-loader',
+					//   options: {
+					//     limit: 4 * 1024,
+					//     name: 'svg/svg.[contenthash:8].[ext]',
+					//   },
+					// },
 				],
 			},
 		],
 	},
-	plugins: [
-		// 设置全局变量
-		new DefinePlugin({
-			'process.env': JSON.stringify(dotEnvConfig),
-		}),
-		new HtmlWebpackPlugin({
-			template: resolve('public/index.html'),
-			filename: 'index.html',
-			title: dotEnvConfig.VUE_APP_TITLE || '.env中未配置',
-			inject: true, // 自动决定将引入内容添加到哪里
-			// 对html进行压缩
-			minify: {
-				collapseWhitespace: true, // 去掉空格
-				removeComments: true, // 去掉注释
-				removeRedundantAttributes: true,
-				useShortDoctype: true,
-				removeEmptyAttributes: true,
-				removeStyleLinkTypeAttributes: true,
-				keepClosingSlash: true,
-				minifyJS: true,
-				minifyCSS: true,
-				minifyURLs: true,
-			},
-		}),
-		new VueLoaderPlugin(),
-		new NodePolyfillPlugin(), //使用插件包含所有或者手动添加
-		// new HardSourceWebpackPlugin(),
-		// new HardSourceWebpackPlugin.ExcludeModulePlugin([]),
-	],
 };
