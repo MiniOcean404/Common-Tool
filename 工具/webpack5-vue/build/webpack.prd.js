@@ -13,6 +13,7 @@ const ProgressBarPlugin = require('progress-bar-webpack-plugin');
 const chalk = require('chalk');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { devMode } = require('./config');
+const ProgressBar = require('./plugin/progress-bar-plugin');
 const smp = new SpeedMeasurePlugin();
 
 const mergeLate = merge(common, {
@@ -151,7 +152,7 @@ const mergeLate = merge(common, {
 				},
 			],
 		}),
-		ProgressBarPlugin({ format: `:msg [:bar] ${chalk.blue.bold(':percent')} (:elapsed s)` }),
+		ProgressBar(),
 		new MiniCssExtractPlugin({
 			filename: devMode ? 'css/[name].css' : 'css/[name].[contenthash].css',
 			chunkFilename: devMode ? 'css/[name].css' : 'css/[name].[contenthash].css',
