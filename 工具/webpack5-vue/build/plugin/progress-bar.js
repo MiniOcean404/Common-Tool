@@ -138,7 +138,7 @@ ProgressBar.prototype.interrupt = function (message) {
 ProgressBar.prototype.terminate = function () {
 	if (this.clear) {
 		if (this.stream.clearLine) {
-			this.stream.clearLine();
+			this.stream.clearLine(0);
 			this.stream.cursorTo(0);
 		}
 	} else {

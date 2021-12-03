@@ -15,7 +15,7 @@ module.exports = function (options) {
 			head: '█',
 			width: 100,
 			total: 100,
-			clear: true,
+			clear: false,
 		},
 		options,
 	);
