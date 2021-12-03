@@ -21,15 +21,8 @@ module.exports = function (options) {
 	);
 
 	const bar = new ProgressBar(barFormat, barOptions);
-	let lastPercent = 0;
 
 	return new webpack.ProgressPlugin((percent, msg) => {
-		// 计算百分比
-		const newPercent = Math.floor(percent * barOptions.width);
-		if (lastPercent < percent || newPercent === 0) {
-			lastPercent = percent;
-		}
-
 		bar.update(percent, {
 			msg: msg,
 		});
