@@ -1,53 +1,55 @@
 exports = module.exports = ProgressBar;
 
-function ProgressBar(fmt, options) {
-	this.stream = options.stream || process.stderr;
+function ProgressBar(format, options) {
+	options = options || {};
+	const { curr, total, width, clear, complete, incomplete, head, renderThrottle, callback, stream } = options;
+	this.stream = stream || process.stderr;
 
-	if (typeof options == 'number') {
-		const total = options;
-		options = {};
-		options.total = total;
-	} else {
-		options = options || {};
-		if ('string' != typeof fmt) throw new Error('format required');
-		if ('number' != typeof options.total) throw new Error('total required');
-	}
+	if ('string' != typeof format) throw new Error('格式化字符串选项必填');
+	if ('number' != typeof total) throw new Error('total必填');
 
-	this.fmt = fmt;
-	this.curr = options.curr || 0;
-	this.total = options.total;
-	this.width = options.width || this.total;
-	this.clear = options.clear;
+	this.format = format; // 格式化样式
+	this.curr = curr || 0; // 当前进度
+	this.total = total; // 总共长度
+	this.barWidth = width || this.total; // 进度条宽度
+	this.clear = clear; // 是否清理
 	this.chars = {
-		complete: options.complete || '=',
-		incomplete: options.incomplete || '-',
-		head: options.head || options.complete || '=',
+		complete: complete || '█', // 完成样式
+		incomplete: incomplete || '░', // 未完成样式
+		head: head || complete || '█',
 	};
-	this.renderThrottle = options.renderThrottle !== 0 ? options.renderThrottle || 16 : 0;
-	this.lastRender = -Infinity;
-	this.callback = options.callback || function () {};
-	this.tokens = {};
-	this.lastDraw = '';
+
+	this.renderThrottle = renderThrottle !== 0 ? renderThrottle || 16 : 0;
+	this.preRender = -Infinity; // 上一个渲染时间
+	this.callback = callback || function () {};
+	this.option = {}; // 记录当前的option
+	this.preDraw = ''; // 上一次终端渲染的字符串
 }
 
-ProgressBar.prototype.tick = function (len, tokens) {
+// 更新
+ProgressBar.prototype.update = function (percent, option) {
+	const completeLen = Math.floor(percent * this.total);
+	const gapLen = completeLen - this.curr;
+
+	this.tick(gapLen, option);
+};
+
+ProgressBar.prototype.tick = function (len, option) {
 	if (len !== 0) len = len || 1;
 
-	// swap tokens
+	// 交换属性
 	if ('object' == typeof len) {
-		(tokens = len)((len = 1));
+		(option = len)((len = 1));
 	}
-	if (tokens) this.tokens = tokens;
+	if (option) this.option = option;
 
-	// start time for eta
-	if (0 == this.curr) this.start = new Date();
-
+	// 当前长度为0开始记录时间
+	if (this.curr === 0) this.startTime = new Date();
 	this.curr += len;
 
-	// try to render
 	this.render();
 
-	// progress complete
+	// 当前周期（tick）进度完成
 	if (this.curr >= this.total) {
 		this.render(undefined, true);
 		this.complete = true;
@@ -56,74 +58,71 @@ ProgressBar.prototype.tick = function (len, tokens) {
 	}
 };
 
-ProgressBar.prototype.render = function (tokens, force) {
-	force = force !== undefined ? force : false;
-	if (tokens) this.tokens = tokens;
+ProgressBar.prototype.render = function (option, force) {
+	// 判断是否是终端
+	if (!this.stream.isTTY) throw new Error('当前的流不是终端');
+	force = force ? force : false;
+	if (option) this.option = option;
 
-	if (!this.stream.isTTY) return;
-
+	// 两次渲染时间间隔
 	const now = Date.now();
-	const delta = now - this.lastRender;
+	const delta = now - this.preRender;
 	if (!force && delta < this.renderThrottle) {
 		return;
 	} else {
-		this.lastRender = now;
+		this.preRender = now;
 	}
 
+	// 百分比
 	let ratio = this.curr / this.total;
 	ratio = Math.min(Math.max(ratio, 0), 1);
-
 	const percent = Math.floor(ratio * 100);
+
+	/* 绘画条形模板 */
 	let incomplete, complete, completeLength;
-	const elapsed = new Date() - this.start;
-	const eta = percent == 100 ? 0 : elapsed * (this.total / this.curr - 1);
-	const rate = this.curr / (elapsed / 1000);
+	const elapsedTime = new Date() - this.startTime;
+	const elapsedStr = isNaN(elapsedTime) ? '0.0' : (elapsedTime / 1000).toFixed(1);
+	const estimatedTime = percent === 100 ? 0 : elapsedTime * (this.total / this.curr - 1);
+	const estimatedStr = isNaN(estimatedTime) || !isFinite(estimatedTime) ? '0.0' : (estimatedTime / 1000).toFixed(1);
+	const rate = this.curr / (elapsedTime / 1000);
 
-	/* populate the bar template with percentages and timestamps */
-	let str = this.fmt
-		.replace(':current', this.curr)
-		.replace(':total', this.total)
-		.replace(':elapsed', isNaN(elapsed) ? '0.0' : (elapsed / 1000).toFixed(1))
-		.replace(':eta', isNaN(eta) || !isFinite(eta) ? '0.0' : (eta / 1000).toFixed(1))
-		.replace(':percent', percent.toFixed(0) + '%')
-		.replace(':rate', Math.round(rate));
+	let str = this.format
+		.replace(':current', this.curr) // 当前进度
+		.replace(':total', this.total) // 总共进度
+		.replace(':elapsedTime', elapsedStr) // 已经经过的时间
+		.replace(':estimatedTime', estimatedStr) // 预估时间
+		.replace(':percent', percent.toFixed(0) + '%') // 进度百分比
+		.replace(':rate', Math.round(rate)); //速率
 
-	/* compute the available space (non-zero) for the bar */
+	/* 计算条的可用空间（非零） */
 	let availableSpace = Math.max(0, this.stream.columns - str.replace(':bar', '').length);
 	if (availableSpace && process.platform === 'win32') {
 		availableSpace = availableSpace - 1;
 	}
 
-	const width = Math.min(this.width, availableSpace);
+	const barWidth = Math.min(this.barWidth, availableSpace);
 
-	/* TODO: the following assumes the user has one ':bar' token */
-	completeLength = Math.round(width * ratio);
+	/* 计算bar完成长度未完成长度*/
+	completeLength = Math.round(barWidth * ratio);
 	complete = Array(Math.max(0, completeLength + 1)).join(this.chars.complete);
-	incomplete = Array(Math.max(0, width - completeLength + 1)).join(this.chars.incomplete);
+	incomplete = Array(Math.max(0, barWidth - completeLength + 1)).join(this.chars.incomplete);
 
-	/* add head to the complete string */
+	/* 将头部添加到完整的字符串中 */
 	if (completeLength > 0) complete = complete.slice(0, -1) + this.chars.head;
 
-	/* fill in the actual progress bar */
+	/* 填写实际进度条 */
 	str = str.replace(':bar', complete + incomplete);
 
-	/* replace the extra tokens */
-	if (this.tokens) for (const key in this.tokens) str = str.replace(':' + key, this.tokens[key]);
+	/* 将:传递的键替换为对应的值 */
+	if (this.option) for (const key in this.option) str = str.replace(':' + key, this.option[key]);
 
-	if (this.lastDraw !== str) {
+	// 移动0点后写入字符换，从光标位置向右清除
+	if (this.preDraw !== str) {
 		this.stream.cursorTo(0);
 		this.stream.write(str);
 		this.stream.clearLine(1);
-		this.lastDraw = str;
+		this.preDraw = str;
 	}
-};
-
-// 更新
-ProgressBar.prototype.update = function (ratio, tokens) {
-	const goal = Math.floor(ratio * this.total);
-	const delta = goal - this.curr;
-
-	this.tick(delta, tokens);
 };
 
 // 打断
@@ -132,7 +131,7 @@ ProgressBar.prototype.interrupt = function (message) {
 	this.stream.cursorTo(0);
 	this.stream.write(message);
 	this.stream.write('\n');
-	this.stream.write(this.lastDraw);
+	this.stream.write(this.preDraw);
 };
 
 // 中断

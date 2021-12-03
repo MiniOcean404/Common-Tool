@@ -79,5 +79,5 @@ module.exports = merge(common, {
 		// 设置process.env.NODE_ENV,mode会自动设置process.env.NODE_ENV，在DefinePlugin设置会与webpack内部nodeEnv存在的条件判断，然后设置process.env.NODE_ENV而冲突
 		nodeEnv: dotEnvConfig['NODE_ENV'],
 	},
-	// plugins: [ProgressBar()],
+	plugins: [ProgressBar()],
 });
