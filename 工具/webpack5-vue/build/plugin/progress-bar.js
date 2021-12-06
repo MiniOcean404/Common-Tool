@@ -1,5 +1,7 @@
 exports = module.exports = ProgressBar;
 
+// 控制台输出颜色 process.stderr.write('\x1B[32minfo\x1B[39m')
+
 function ProgressBar(format, options) {
 	options = options || {};
 	const { curr, total, width, clear, complete, incomplete, head, renderThrottle, callback, stream } = options;
