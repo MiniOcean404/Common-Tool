@@ -9,8 +9,8 @@
 		style="width: 100%"
 		:cell-style="cellColor"
 		@row-click="tableClick"
-		@current-change="choiceSingleMultiple"
-		@selection-change="choiceSingleMultiple"
+		@current-change="choiceSingle"
+		@selection-change="choiceMultiple"
 		@row-dblclick="rowDBClick"
 	>
 		<!--多选-->
@@ -60,7 +60,7 @@
 		</el-table-column>
 
 		<!--操作列-->
-		<div v-if="OperateCol">
+		<div v-if="OperateCol.colName">
 			<el-table-column
 				:label="OperateCol.colName"
 				:width="OperateCol.width"
@@ -120,9 +120,9 @@ export default {
 			type: Object,
 			default() {
 				return {
-					colName: '操作',
+					colName: '',
 					width: '200',
-					OperateColData: [{ name: '移除', color: '#409EFF' }],
+					OperateColData: [{ name: '', color: '#409EFF' }],
 				};
 			},
 		},
@@ -201,7 +201,10 @@ export default {
 		},
 
 		// * 单选多选方式
-		choiceSingleMultiple(val) {
+		choiceSingle(val) {
+			this.$emit('choice-single-multiple', val);
+		},
+		choiceMultiple(val) {
 			this.$emit('choice-single-multiple', val);
 		},
 

@@ -105,17 +105,19 @@ export const tableMixin = {
 	},
 	methods: {
 		//todo 通用列表数据初始化
-		async getSelectList(api, list, value, label, params) {
-			const { data } = await api(params);
+		getSelectList(api, list, value, label, params, isclear) {
+			api(params).then(({ data }) => {
+				if (isclear) list.length = 0;
 
-			if (list.length === 0) {
-				data.forEach((i) => {
-					const obj = {};
-					obj.value = i[value];
-					obj.label = i[label];
-					list.push(obj);
-				});
-			}
+				if (list.length === 0) {
+					data.forEach((i) => {
+						const obj = {};
+						obj.value = i[value];
+						obj.label = i[label];
+						list.push(obj);
+					});
+				}
+			});
 		},
 
 		// todo 通用查询
