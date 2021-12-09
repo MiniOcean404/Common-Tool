@@ -202,7 +202,7 @@ export default {
 
 		// * 单选多选方式
 		choiceSingle(val) {
-			this.$emit('choice-single-multiple', val);
+			this.isRadio && this.$emit('choice-single-multiple', val);
 		},
 		choiceMultiple(val) {
 			this.$emit('choice-single-multiple', val);
