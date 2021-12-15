@@ -7,6 +7,7 @@
 			:layout="layout"
 			:total="pageOption.total"
 			:page-size="pageOption.pageSize"
+			@size-change="sizeChange"
 		></el-pagination>
 	</div>
 </template>
@@ -27,12 +28,15 @@ export default {
 		},
 		layout: {
 			type: String,
-			default: 'total, prev, pager, next, jumper',
+			default: 'total, sizes, prev, pager, next, jumper',
 		},
 	},
 	methods: {
 		currentPageChangeHandle(currentPage) {
 			this.$emit('currentPageChange', currentPage);
+		},
+		sizeChange(size) {
+			this.$emit('size-change', size);
 		},
 	},
 };

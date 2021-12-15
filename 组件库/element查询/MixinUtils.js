@@ -178,6 +178,11 @@ export const tableMixin = {
 		currentPageChange(current) {
 			this.requestDeploy(current);
 		},
+
+		sizeChange(size) {
+			this.pageOption.pageSize = size;
+			this.requestDeploy();
+		},
 	},
 };
 
