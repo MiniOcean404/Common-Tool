@@ -51,10 +51,6 @@ module.exports = merge(common, {
 
 			console.log('Listening on port:', devServer.server.address().port);
 		},
-		// 其他中间件之后执行函数
-		onAfterSetupMiddleware: (devServer) => {
-			if (!devServer) throw new Error('webpack-dev-server is not defined');
-		},
 		proxy: dotEnvConfig.VUE_APP_BASE_API
 			? {
 					[dotEnvConfig.VUE_APP_BASE_API]: {
