@@ -25,26 +25,25 @@ const mergeLate = merge(common, {
 		type: 'filesystem', //保存位置，开发环境下默认为memory类型，生产环境cache配置默认是关闭的。
 		// 生产环境下默认的缓存存放目录在 node_modules/.cache/webpack/default-production 中，如果想要修改，可通过配置 name，来实现分类存放。如设置 name: 'production-cache' 时生成的缓存
 		name: 'production-cache',
+		compression: 'gzip',
 		cacheDirectory: resolve('node_modules/.cache/webpack'),
 		buildDependencies: {
 			config: [__filename], // webpack 和 loader是否失效来决定之前构建是否失效
 		},
+		version: '1.0',
 	},
 	optimization: {
-		// 为块生成 id 的方法
-		chunkIds: 'size',
-		// 为模块生成 id 的方法
+		chunkIds: 'size', // size:让初始下载包大小更小的数字 id。
 		moduleIds: 'size',
-		// 将导出名称重命名为较短的名称
-		mangleExports: 'size',
+		mangleExports: 'size', // 简写形式 — 通常只有一个字符 — 专注于最小的下载 size
+		concatenateModules: true, //告知 webpack 去寻找模块图形中的片段，哪些是可以安全地被合并到单一模块中
 		minimize: true,
-		concatenateModules: false,
 		minimizer: [
 			new TerserPlugin({
 				test: /\.js(\?.*)?$/i,
-				parallel: true,
+				parallel: true, //使用多进程并发运行以提高构建速度。 并发运行的默认数量： os.cpus().length - 1 。
 				terserOptions: {
-					sourceMap: true,
+					sourceMap: false,
 					compress: {
 						arrows: false,
 						collapse_vars: false,
@@ -76,10 +75,6 @@ const mergeLate = merge(common, {
 				},
 			}),
 			new CssMinimizerPlugin(),
-			new WebpackBuildNotifierPlugin({
-				title: '打包任务',
-				suppressSuccess: true,
-			}),
 			// new webpack.DllPlugin({
 			// 	name: '[name]_dll',
 			// 	path: resolve('dist', 'dll', 'manifest.json'), //manifest.json的生成路径
@@ -137,6 +132,11 @@ const mergeLate = merge(common, {
 		},
 	},
 	plugins: [
+		ProgressBar(),
+		new WebpackBuildNotifierPlugin({
+			title: '打包任务',
+			suppressSuccess: true,
+		}),
 		new CopyWebpackPlugin({
 			patterns: [
 				{
@@ -149,7 +149,6 @@ const mergeLate = merge(common, {
 				},
 			],
 		}),
-		ProgressBar(),
 		new MiniCssExtractPlugin({
 			filename: devMode ? 'css/[name].css' : 'css/[name].[contenthash].css',
 			chunkFilename: devMode ? 'css/[name].css' : 'css/[name].[contenthash].css',
