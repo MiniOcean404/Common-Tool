@@ -45,7 +45,7 @@ module.exports = {
 		//  chunckhash:根据文件块生成hash值，文件内容改变，会使得这个文件及其被引入的其他文件生成新的hash而失效
 		filename: 'js/[name].[contenthash:8].js',
 		//非入口文件chunk的名称。所谓非入口即import动态导入形成的chunk或者optimization中的splitChunks提取的公共chunk,它支持和 filename 一致的内置变量
-		chunkFilename: 'js/common-or-noEntry.chunk.[contenthash:10].js',
+		chunkFilename: 'js/common-or-noEntry.chunk.[contenthash:8].js',
 		// 所有资源引入公共路径前缀，小心使用
 		publicPath: '/',
 		clean: true, // 打包前清空输出目录，相当于clean-webpack-plugin插件的作用,webpack5新增。
@@ -76,7 +76,7 @@ module.exports = {
 	},
 	// WebAssembly 被设计为一种面向 web 的二进制的格式文件，以其更接近于机器码而拥有着更小的文件体积和更快速的执行效率。c/c++ 等高级语言都能直接编译成 .wasm 文件而被 js 调用。
 	experiments: {
-		asyncWebAssembly: true,
+		asyncWebAssembly: false,
 	},
 	externals: {},
 	plugins: [

@@ -1,28 +1,25 @@
 const { resolve } = require('./utils');
+const { devMode } = require('./config');
+const chalk = require('chalk');
 const common = require('./webpack.common');
-const { merge } = require('webpack-merge');
 
-// 引入生产环境需要的插件
+const { merge } = require('webpack-merge');
 const CopyWebpackPlugin = require('copy-webpack-plugin'); //拷贝静态资源
-// 该插件将在Webpack构建过程中搜索CSS资源，并优化\最小化CSS
 const SpeedMeasurePlugin = require('speed-measure-webpack-plugin');
 const WebpackBuildNotifierPlugin = require('webpack-build-notifier'); // 打包提示
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
-const TerserPlugin = require('terser-webpack-plugin');
-const ProgressBarPlugin = require('progress-bar-webpack-plugin');
-const chalk = require('chalk');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const { devMode } = require('./config');
+const TerserPlugin = require('terser-webpack-plugin');
 const ProgressBar = require('./plugin/progress-bar-plugin');
+const ProgressBarPlugin = require('progress-bar-webpack-plugin');
+
 const smp = new SpeedMeasurePlugin();
 
 const mergeLate = merge(common, {
 	mode: 'production',
-	// eval-cheap-source-map 结合webpack的真实代码位置 source-map 源代码映射
-	devtool: 'eval-cheap-source-map',
-	// 打包文件性能提示
+	devtool: 'eval-cheap-source-map', // eval-cheap-source-map 结合webpack的真实代码位置 source-map 源代码映射
 	performance: {
-		hints: false, // 枚举
+		hints: false, // 打包文件性能提示
 	},
 	cache: {
 		type: 'filesystem', //保存位置，开发环境下默认为memory类型，生产环境cache配置默认是关闭的。
@@ -30,7 +27,7 @@ const mergeLate = merge(common, {
 		name: 'production-cache',
 		cacheDirectory: resolve('node_modules/.cache/webpack'),
 		buildDependencies: {
-			config: [__filename],
+			config: [__filename], // webpack 和 loader是否失效来决定之前构建是否失效
 		},
 	},
 	optimization: {
@@ -41,6 +38,7 @@ const mergeLate = merge(common, {
 		// 将导出名称重命名为较短的名称
 		mangleExports: 'size',
 		minimize: true,
+		concatenateModules: false,
 		minimizer: [
 			new TerserPlugin({
 				test: /\.js(\?.*)?$/i,
@@ -87,7 +85,6 @@ const mergeLate = merge(common, {
 			// 	path: resolve('dist', 'dll', 'manifest.json'), //manifest.json的生成路径
 			// }),
 		],
-		concatenateModules: false,
 		splitChunks: {
 			chunks: 'all', //将什么类型的代码块用于分割，三选一： "initial"：入口代码块 | "all"：全部 | "async"：按需加载的代码块
 			minSize: 20000, //大小超过30kb的模块才会被提取

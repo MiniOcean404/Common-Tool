@@ -5,6 +5,12 @@ const ProgressBar = require('./progress-bar');
 module.exports = function (options) {
 	options = options || {};
 	const { stream = process.stderr } = options;
+	const enabled = stream && stream.isTTY;
+
+	if (!enabled) {
+		return function () {};
+	}
+
 	const prefix = chalk.cyan.bold('构建进度：');
 	const barFormat = options.format || prefix + ':bar' + chalk.green.bold(' :percent') + '  预估:estimatedTime/s';
 
@@ -15,9 +21,10 @@ module.exports = function (options) {
 			head: '█',
 			width: 100,
 			total: 100,
-			clear: false,
+			clear: true,
 		},
 		options,
+		stream,
 	);
 
 	const bar = new ProgressBar(barFormat, barOptions);
