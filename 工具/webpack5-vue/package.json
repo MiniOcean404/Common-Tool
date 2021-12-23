@@ -6,11 +6,10 @@
   "license": "MIT",
   "scripts": {
     "create-page": "plop",
-    "webpack-serve-online": "cross-env NODE_ENV=online webpack serve  --config build/webpack.dev.js ",
-    "webpack-serve-dev": "cross-env NODE_ENV=development webpack serve --config build/webpack.dev.js",
+    "webpack-serve-online": "cross-env NODE_ENV=online webpack serve  --config build/webpack.server.js ",
+    "webpack-serve-dev": "cross-env NODE_ENV=development webpack serve --config build/webpack.server.js",
     "build-up:dev": "node upload/index.js dev",
     "build-up:prd": "node upload/index.js prd",
-    "build:dev": "cross-env NODE_ENV=production webpack --config  build/webpack.prd.js ",
     "build:prd": "cross-env NODE_ENV=production webpack --config  build/webpack.prd.js ",
     "webpack-build-dll": "webpack --config  build/webpack.dll.js",
     "webpack-serve-test": "cross-env NODE_ENV=online node build/compiler.js ",

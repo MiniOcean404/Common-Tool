@@ -1,4 +1,4 @@
-const devConfig = require('./webpack.dev');
+const devConfig = require('./webpack.service');
 const webpack = require('webpack');
 const WebpackDevServer = require('webpack-dev-server');
 const chalk = require('chalk');
