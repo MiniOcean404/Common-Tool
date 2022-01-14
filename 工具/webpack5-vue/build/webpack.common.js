@@ -13,7 +13,6 @@ const { VueLoaderPlugin } = require('vue-loader');
 const ProgressBarPlugin = require('progress-bar-webpack-plugin'); //进度条
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const threadLoader = require('thread-loader');
-const webpack = require('webpack');
 // const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
 
 const jsWorkerPool = {
@@ -47,7 +46,7 @@ module.exports = {
 		//非入口文件chunk的名称。所谓非入口即import动态导入形成的chunk或者optimization中的splitChunks提取的公共chunk,它支持和 filename 一致的内置变量
 		chunkFilename: 'js/common-or-noEntry.chunk.[contenthash:8].js',
 		// 所有资源引入公共路径前缀，小心使用
-		publicPath: './',
+		publicPath: devMode ? '/' : './',
 		clean: true, // 打包前清空输出目录，相当于clean-webpack-plugin插件的作用,webpack5新增。
 		library: {
 			name: '[name]', //整个库向外暴露的变量名
@@ -180,7 +179,7 @@ module.exports = {
 											shadowMode: false,
 									  }
 									: {
-											publicPath: '/',
+											publicPath: '../', //可以控制css内部引用其他例如：字体文件的路径位置
 											esModule: false,
 									  },
 							},
