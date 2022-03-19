@@ -1,25 +1,49 @@
+//eslint-plugin-vue: https://eslint.vuejs.org/user-guide/#faq
+
 module.exports = {
+	// ESLint 一旦发现配置文件中有 "root": true，它就会停止在父级目录中寻找。
 	root: true,
+
+	// 当访问当前源文件内未定义的变量时，no-undef 规则将发出警告。这个可以定义全局变量
+	// 设置为 "writable" 以允许重写变量，或 "readonly" 不允许重写变量 "off" 禁用全局变量
+	globals: { uni: true },
+
+	// 当前书写的代码有什么样的环境
 	env: {
 		browser: true,
 		es2021: true,
+		node: true,
+		es6: true,
 	},
-	ecmaFeatures: {
-		// 允许在全局作用域下使用 return 语句
-		globalReturn: true,
-		impliedStrict: true,
-		// 启用 JSX
-		jsx: true,
-		modules: true,
-	},
+
+	// 表示你想使用的额外的语言特性
 	parserOptions: {
-		ecmaVersion: 11,
-		sourceType: 'module',
+		ecmaVersion: 11, // 'latest' | 11 | 2020  (不自动启用es6全局变量)
+		sourceType: 'module', // 设置为 "script" (默认) 或 "module"（如果你的代码是 ECMAScript 模块)
+		ecmaFeatures: {
+			globalReturn: true, // 允许在全局作用域下使用 return 语句
+			impliedStrict: true, // 启用全局 strict mode
+			jsx: true, // 启用 JSX
+		},
 	},
-	extends: ['plugin:vue/essential', 'airbnb-base', 'plugin:prettier/recommended'],
+
+	// 在配置文件里配置插件时，可以使用 plugins 关键字来存放插件名字的列表。插件名称可以省略 eslint-plugin- 前缀
 	plugins: ['vue'],
-	globals: { uni: true },
-	// 该字段定义的数据可以在所有的插件中共享。这样每条规则执行的时候都可以访问这里面定义的数据
+
+	extends: [
+		'plugin:vue/essential',
+		'airbnb-base',
+		'plugin:prettier/recommended',
+		// // 防止错误或意外行为的规则
+		// 'plugin:vue/vue3-essential',
+		// // 大大提高代码可读性和/或开发体验的规则
+		// 'eslint:recommended',
+		// // eslint 标准配置
+		// 'standard',
+		// // 为Prettier提供可共享的配置
+		// '@vue/eslint-config-prettier',
+	],
+
 	settings: {
 		'import/resolver': {
 			webpack: {
@@ -28,6 +52,11 @@ module.exports = {
 			},
 		},
 	},
+
+	// 你可以使用注释或配置文件修改你项目中要使用的规则。要改变一个规则设置
+	//  "off" 或 0 - 关闭规则
+	// "warn" 或 1 - 开启规则，使用警告级别的错误：warn (不会导致程序退出)
+	// "error" 或 2 - 开启规则，使用错误级别的错误：error (当被触发的时候，程序会退出)
 	rules: {
 		'import/extensions': [
 			'off',
@@ -296,4 +325,4 @@ module.exports = {
 		],
 		'array-bracket-spacing': [2, 'never'],
 	},
-};
+}
