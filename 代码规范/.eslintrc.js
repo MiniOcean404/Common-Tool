@@ -34,14 +34,16 @@ module.exports = {
 		'airbnb-base',
 		'plugin:vue/essential',
 		'plugin:prettier/recommended',
-		// // 防止错误或意外行为的规则
-		// 'plugin:vue/vue3-essential',
-		// // 大大提高代码可读性和/或开发体验的规则
-		// 'eslint:recommended',
-		// // eslint 标准配置
-		// 'standard',
-		// // 为Prettier提供可共享的配置
-		// '@vue/eslint-config-prettier',
+		// 'plugin:vue/vue3-essential', // 防止错误或意外行为的规则
+		// 'eslint:recommended', // 大大提高代码可读性和/或开发体验的规则
+		// 'standard', // eslint 标准配置
+		// '@vue/eslint-config-prettier',  // 为Prettier提供可共享的配置
+
+		// 规则集合
+		// eslint-config-airbnb: Airbnb 公司提供的配置集
+		// eslint-config-prettier: 使用这个配置集，会关闭一些可能与 Prettier 冲突的规则
+		// eslint-config-react: create react app 使用的配置集
+		// eslint-config-vue: vuejs 使用的配置集
 	],
 
 	settings: {
