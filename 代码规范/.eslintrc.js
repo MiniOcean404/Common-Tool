@@ -18,7 +18,7 @@ module.exports = {
 
 	// 表示你想使用的额外的语言特性
 	parserOptions: {
-		ecmaVersion: 11, // 'latest' | 11 | 2020  (不自动启用es6全局变量)
+		ecmaVersion: 13, // 'latest' | 11 | 2020  (不自动启用es6全局变量)
 		sourceType: 'module', // 设置为 "script" (默认) 或 "module"（如果你的代码是 ECMAScript 模块)
 		ecmaFeatures: {
 			globalReturn: true, // 允许在全局作用域下使用 return 语句
@@ -31,8 +31,8 @@ module.exports = {
 	plugins: ['vue'],
 
 	extends: [
-		'plugin:vue/essential',
 		'airbnb-base',
+		'plugin:vue/essential',
 		'plugin:prettier/recommended',
 		// // 防止错误或意外行为的规则
 		// 'plugin:vue/vue3-essential',
