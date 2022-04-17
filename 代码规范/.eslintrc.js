@@ -45,7 +45,7 @@ module.exports = {
 
 		// 解决prettier 和 eslint 冲突问题
 		// eslint-config-prettier: 使用这个配置集，会关闭一些可能与 Prettier 冲突的规则
-		// eslint-plugin-prettier,
+		// eslint-plugin-prettier, prettier规则集 可以使用plugin:['prettier']，然后在规则中配置
 		// '@vue/eslint-config-prettier',  // Vue为Prettier提供可共享的配置
 	],
 
