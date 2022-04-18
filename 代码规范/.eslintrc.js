@@ -16,6 +16,9 @@ module.exports = {
 		es6: true,
 	},
 
+	// ESLint 默认使用Espree作为其解析器，你可以在配置文件中指定一个不同的解析器，只要该解析器符合下列要求
+	parser: '@typescript-eslint/parser', // ts解析器
+
 	// 表示你想使用的额外的语言特性
 	parserOptions: {
 		ecmaVersion: 13, // 'latest' | 11 | 2020  (不自动启用es6全局变量)
@@ -39,9 +42,17 @@ module.exports = {
 		// 'standard', // eslint 标准配置
 		// 'eslint:recommended', // 大大提高代码可读性和/或开发体验的规则
 		// eslint-config-airbnb: Airbnb 公司提供的配置集
+
+		// react 配置合集
 		// eslint-config-react: create react app 使用的配置集
+
+		// vue 规则集合
 		// eslint-config-vue: vue2 使用的配置集
 		// 'plugin:vue/vue3-essential', // Vue3防止错误或意外行为的规则
+
+		// ts 规则合集
+		// @typescript-eslint/eslint-plugin
+		// @typescript-eslint/parser
 
 		// 解决prettier 和 eslint 冲突问题
 		// eslint-config-prettier: 使用这个配置集，会关闭一些可能与 Prettier 冲突的规则
