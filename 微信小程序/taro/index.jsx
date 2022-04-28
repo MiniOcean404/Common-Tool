@@ -13,15 +13,41 @@ const WXCustomNavigationBar = (props) => {
 	// 需要的功能
 	const { back, title, iconTheme } = props
 	// 样式
-	const { className, color, background, topBgColor } = props
+	const { className, color, background } = props
 	// 渲染html
 	const { renderCenter, renderLeft, renderRight } = props
 	// 事件 返回页数
 	const { onBack, delta } = props
 
-	const setStyle = (systemInfo) => {
-		const { statusBarHeight, navBarTotalHeight, capsulePosition, navBarExtendHeight, rightDistance, leftWidth } = systemInfo
+	const [configStyle, setConfigStyle] = useState({})
+	const [systemInfo, setSystemInfo] = useState(globalSystemInfo)
 
+	const { navigationBarInnerStyle, navBarLeft } = configStyle
+	const { ios, rightDistance, navBarTotalHeight, statusBarHeight, capsulePosition, navBarExtendHeight, leftWidth } = systemInfo
+
+	const containerClass = `wx-custom-navigation-bar ${className || ''} ${ios ? 'ios' : 'android'}`
+	const slot_center = title ? <text>{title}</text> : renderCenter
+
+	useDidShow(() => {
+		if (globalSystemInfo.ios) {
+			globalSystemInfo = getSystemInfo()
+			setSystemInfo(globalSystemInfo)
+		}
+		setConfigStyle(setStyle())
+	})
+
+	const backClick = () => {
+		if (isFunction(onBack)) return onBack()
+
+		const pages = Taro.getCurrentPages()
+		if (pages.length >= 2) {
+			navigateBack({
+				delta,
+			})
+		}
+	}
+
+	const setStyle = () => {
 		const { width, height } = capsulePosition
 
 		return {
@@ -45,40 +71,11 @@ const WXCustomNavigationBar = (props) => {
 		}
 	}
 
-	const [configStyle, setConfigStyle] = useState({})
-	const [systemInfo, setSystemInfo] = useState({})
-
-	const { navigationBarInnerStyle, navBarLeft } = configStyle
-	const { ios, rightDistance, navBarTotalHeight } = systemInfo
-
-	const containerClass = `wx-custom-navigation-bar ${className || ''} ${ios ? 'ios' : 'android'}`
-
-	useDidShow(() => {
-		if (globalSystemInfo.ios) {
-			globalSystemInfo = getSystemInfo()
-			setSystemInfo(globalSystemInfo)
-			setConfigStyle(setStyle(globalSystemInfo))
-		}
-	})
-
-	const backClick = () => {
-		if (isFunction(onBack)) return onBack()
-
-		const pages = Taro.getCurrentPages()
-		if (pages.length >= 2) {
-			navigateBack({
-				delta,
-			})
-		}
-	}
-
-	let slot_center = title ? <text>{title}</text> : renderCenter
-
 	return (
 		<View
 			className={containerClass}
 			style={{
-				background: topBgColor ? topBgColor : background,
+				background,
 				height: navBarTotalHeight,
 			}}
 		>
@@ -86,7 +83,7 @@ const WXCustomNavigationBar = (props) => {
 			<view className={`place-holder ${ios ? 'ios' : 'android'}`} style={{ paddingTop: navBarTotalHeight }} />
 
 			{/*内容区域*/}
-			<view className={`nav__inner ${ios ? 'ios' : 'android'}`} style={{ background, ...navigationBarInnerStyle }}>
+			<view className={`nav__inner ${ios ? 'ios' : 'android'}`} style={{ ...navigationBarInnerStyle }}>
 				{/*左边按钮*/}
 				<view className="nav__left" style={{ ...navBarLeft }}>
 					{/*显示左侧按钮*/}
