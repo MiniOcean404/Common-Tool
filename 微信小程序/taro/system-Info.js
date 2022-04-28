@@ -1,3 +1,5 @@
+// 原仓库地址：https://github.com/lingxiaoyi/Taro-navigation-bar/blob/master/src/components/navbar_lxy/index.js
+
 //获取机型环境，适配不同机型
 import { getMenuButtonBoundingClientRect, getSystemInfoSync } from '@tarojs/taro'
 
