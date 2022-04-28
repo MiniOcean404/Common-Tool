@@ -10,60 +10,19 @@ import './index.less'
 let globalSystemInfo = getSystemInfo()
 
 const WXCustomNavigationBar = (props) => {
-	const {
-		className,
-
-		// 需要的功能
-		back,
-		home,
-		title,
-		searchBar,
-		searchText,
-		iconTheme,
-
-		// 样式
-		color,
-		background,
-		topBgColor,
-
-		// 渲染html
-		renderCenter,
-		renderLeft,
-		renderRight,
-
-		// 返回页数
-		delta,
-
-		// 事件
-		onHome,
-		onSearch,
-		onBack,
-	} = props
+	// 需要的功能
+	const { back, title, iconTheme } = props
+	// 样式
+	const { className, color, background, topBgColor } = props
+	// 渲染html
+	const { renderCenter, renderLeft, renderRight } = props
+	// 事件 返回页数
+	const { onBack, delta } = props
 
 	const setStyle = (systemInfo) => {
 		const { statusBarHeight, navBarTotalHeight, capsulePosition, navBarExtendHeight, rightDistance, leftWidth } = systemInfo
 
-		// 左边按钮样式
-		let navBarLeft
-
 		const { width, height } = capsulePosition
-		// 只有返回按钮或者home其中一个按钮
-		if ((back && !home) || (!back && home)) {
-			navBarLeft = {
-				width,
-				height,
-				marginLeft: 0,
-				marginRight: rightDistance,
-			}
-		} else if ((back && home) || title) {
-			navBarLeft = {
-				width,
-				height,
-				marginLeft: rightDistance,
-			}
-		} else {
-			navBarLeft = { width: 'auto', marginLeft: 0 }
-		}
 
 		return {
 			// 内容区域样式
@@ -74,7 +33,15 @@ const WXCustomNavigationBar = (props) => {
 				paddingRight: leftWidth, // 胶囊按钮左侧到屏幕右侧的边距
 				paddingBottom: navBarExtendHeight, // 导航栏额外高度
 			},
-			navBarLeft,
+			// 左边按钮样式
+			navBarLeft: back
+				? {
+						width,
+						height,
+						marginLeft: 0,
+						marginRight: rightDistance,
+				  }
+				: { width: 'auto', marginLeft: 0 },
 		}
 	}
 
@@ -82,7 +49,7 @@ const WXCustomNavigationBar = (props) => {
 	const [systemInfo, setSystemInfo] = useState({})
 
 	const { navigationBarInnerStyle, navBarLeft } = configStyle
-	const { capsulePosition, ios, rightDistance, navBarTotalHeight } = systemInfo
+	const { ios, rightDistance, navBarTotalHeight } = systemInfo
 
 	const containerClass = `wx-custom-navigation-bar ${className || ''} ${ios ? 'ios' : 'android'}`
 
@@ -105,28 +72,7 @@ const WXCustomNavigationBar = (props) => {
 		}
 	}
 
-	const homeClick = () => {
-		if (isFunction(onHome)) return onHome()
-	}
-
-	const searchClick = () => {
-		if (isFunction(onSearch)) return onSearch()
-	}
-
-	let slot_center
-
-	if (title) {
-		slot_center = <text>{title}</text>
-	} else if (searchBar) {
-		slot_center = (
-			<view className="nav-search" style={{ height: capsulePosition.height }} onClick={searchClick}>
-				<view className="nav-search__icon" />
-				<view className="nav-search__input">{searchText}</view>
-			</view>
-		)
-	} else {
-		slot_center = renderCenter
-	}
+	let slot_center = title ? <text>{title}</text> : renderCenter
 
 	return (
 		<View
@@ -144,21 +90,10 @@ const WXCustomNavigationBar = (props) => {
 				{/*左边按钮*/}
 				<view className="nav__left" style={{ ...navBarLeft }}>
 					{/*显示左侧按钮*/}
-					{back && !home && <view onClick={backClick} className={`nav__button nav__btn_go-back ${iconTheme}`} />}
-
-					{/*显示home*/}
-					{!back && home && <view onClick={homeClick} className={`nav__button nav__btn_go-home ${iconTheme}`} />}
-
-					{/*显示返回和home*/}
-					{back && home && (
-						<view className={`nav__buttons ${ios ? 'ios' : 'android'}`}>
-							<view onClick={backClick} className={`nav__button nav__btn_go-back ${iconTheme}`} />
-							<view onClick={homeClick} className={`nav__button nav__btn_go-home ${iconTheme}}`} />
-						</view>
-					)}
+					{back && <view onClick={backClick} className={`nav__button nav__btn_go-back ${iconTheme}`} />}
 
 					{/*显示自定义渲染*/}
-					{!back && !home && renderLeft}
+					{!back && renderLeft}
 				</view>
 
 				{/*中间显示区*/}
@@ -182,11 +117,8 @@ WXCustomNavigationBar.defaultProps = {
 	background: 'rgba(255,255,255,1)', //导航栏背景
 	color: '#000000',
 	title: '',
-	searchText: '点我搜索',
-	searchBar: false,
 	back: false,
-	home: false,
-	iconTheme: 'black',
+	theme: 'black', // black 或者 white
 	delta: 1,
 }
 
