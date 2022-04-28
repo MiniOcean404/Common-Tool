@@ -1,7 +1,7 @@
 import { View } from '@tarojs/components'
 import { useState } from 'react'
 
-import { getSystemInfo } from '@/utils/system-Info'
+import { getSystemInfo } from '@/components/wx/wx-custom-navigation-bar/system-Info'
 import { isFunction } from '@/utils/type-check'
 import Taro, { navigateBack, useDidShow } from '@tarojs/taro'
 
@@ -13,16 +13,18 @@ const WXCustomNavigationBar = (props) => {
 	const {
 		className,
 
+		// 需要的功能
 		back,
 		home,
 		title,
-		color,
-		background,
-		topBgColor,
-
 		searchBar,
 		searchText,
 		iconTheme,
+
+		// 样式
+		color,
+		background,
+		topBgColor,
 
 		// 渲染html
 		renderCenter,
@@ -39,34 +41,24 @@ const WXCustomNavigationBar = (props) => {
 	} = props
 
 	const setStyle = (systemInfo) => {
-		const { statusBarHeight, navBarHeight, capsulePosition, navBarExtendHeight, ios, windowWidth } = systemInfo
-
-		let rightDistance = windowWidth - capsulePosition.right //胶囊按钮右侧到屏幕右侧的边距
-		let leftWidth = windowWidth - capsulePosition.left //胶囊按钮左侧到屏幕右侧的边距
-
-		// 内容区域样式
-		let navigationBarInnerStyle = {
-			color,
-			height: navBarHeight + navBarExtendHeight,
-			paddingTop: statusBarHeight,
-			paddingRight: leftWidth,
-			paddingBottom: navBarExtendHeight,
-		}
+		const { statusBarHeight, navBarTotalHeight, capsulePosition, navBarExtendHeight, rightDistance, leftWidth } = systemInfo
 
 		// 左边按钮样式
-		let navBarLeft = {}
+		let navBarLeft
 
+		const { width, height } = capsulePosition
+		// 只有返回按钮或者home其中一个按钮
 		if ((back && !home) || (!back && home)) {
 			navBarLeft = {
-				width: capsulePosition.width,
-				height: capsulePosition.height,
+				width,
+				height,
 				marginLeft: 0,
 				marginRight: rightDistance,
 			}
 		} else if ((back && home) || title) {
 			navBarLeft = {
-				width: capsulePosition.width,
-				height: capsulePosition.height,
+				width,
+				height,
 				marginLeft: rightDistance,
 			}
 		} else {
@@ -74,26 +66,30 @@ const WXCustomNavigationBar = (props) => {
 		}
 
 		return {
-			navigationBarInnerStyle,
+			// 内容区域样式
+			navigationBarInnerStyle: {
+				color, // 字体颜色
+				height: navBarTotalHeight, // 导航栏高度
+				paddingTop: statusBarHeight, // 状态栏高度
+				paddingRight: leftWidth, // 胶囊按钮左侧到屏幕右侧的边距
+				paddingBottom: navBarExtendHeight, // 导航栏额外高度
+			},
 			navBarLeft,
-
-			// 位置信息
-			navBarHeight,
-			capsulePosition,
-			navBarExtendHeight,
-			ios,
-			rightDistance,
 		}
 	}
 
-	const [configStyle, setConfigStyle] = useState(globalSystemInfo)
-	const { navigationBarInnerStyle, navBarLeft, navBarHeight, capsulePosition, navBarExtendHeight, ios, rightDistance } =
-		configStyle
+	const [configStyle, setConfigStyle] = useState({})
+	const [systemInfo, setSystemInfo] = useState({})
+
+	const { navigationBarInnerStyle, navBarLeft } = configStyle
+	const { capsulePosition, ios, rightDistance, navBarTotalHeight } = systemInfo
+
 	const containerClass = `wx-custom-navigation-bar ${className || ''} ${ios ? 'ios' : 'android'}`
 
 	useDidShow(() => {
 		if (globalSystemInfo.ios) {
 			globalSystemInfo = getSystemInfo()
+			setSystemInfo(globalSystemInfo)
 			setConfigStyle(setStyle(globalSystemInfo))
 		}
 	})
@@ -137,14 +133,14 @@ const WXCustomNavigationBar = (props) => {
 			className={containerClass}
 			style={{
 				background: topBgColor ? topBgColor : background,
-				height: navBarHeight + navBarExtendHeight,
+				height: navBarTotalHeight,
 			}}
 		>
 			{/*占位符*/}
-			<view className={`place-holder ${ios ? 'ios' : 'android'}`} style={{ paddingTop: navBarHeight + navBarExtendHeight }} />
+			<view className={`place-holder ${ios ? 'ios' : 'android'}`} style={{ paddingTop: navBarTotalHeight }} />
 
 			{/*内容区域*/}
-			<view className={`nav__inner ${ios ? 'ios' : 'android'}`} style={{ background: background, ...navigationBarInnerStyle }}>
+			<view className={`nav__inner ${ios ? 'ios' : 'android'}`} style={{ background, ...navigationBarInnerStyle }}>
 				{/*左边按钮*/}
 				<view className="nav__left" style={{ ...navBarLeft }}>
 					{/*显示左侧按钮*/}
