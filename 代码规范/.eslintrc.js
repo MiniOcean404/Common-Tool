@@ -30,7 +30,7 @@ module.exports = {
 		},
 	},
 
-	// 在配置文件里配置插件时，可以使用 plugins 关键字来存放插件名字的列表。插件名称可以省略 eslint-plugin- 前缀
+	// 在配置文件里配置插件时，可以使用 plugins 关键字来存放插件名字的列表。插件名称可以省略 eslint-plugin- 前缀 extends以前缀plugin:xx使用
 	plugins: ['vue'],
 
 	extends: [
