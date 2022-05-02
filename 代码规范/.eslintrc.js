@@ -58,6 +58,7 @@ module.exports = {
 		// '@vue/eslint-config-prettier',  // Vue为Prettier提供可共享的配置
 	],
 
+	// 插件用于settings指定应在其所有规则之间共享的信息。您可以将settings对象添加到 ESLint 配置文件中，它将提供给正在执行的每个规则。
 	settings: {
 		'import/resolver': {
 			webpack: {
@@ -66,6 +67,17 @@ module.exports = {
 			},
 		},
 	},
+
+	// 可以使用overrides覆盖基于配置中文件 glob 模式的设置
+	overrides: [
+		{
+			files: ['bin/*.js', 'lib/*.js'],
+			excludedFiles: '*.test.js',
+			rules: {
+				quotes: ['error', 'single'],
+			},
+		},
+	],
 
 	// 在配置文件里配置插件时，可以使用 plugins 关键字来存放插件名字的列表。
 	// 插件主要针对的是rule，可以拓展额外的规则
@@ -76,6 +88,7 @@ module.exports = {
 	//  "off" 或 0 - 关闭规则
 	// "warn" 或 1 - 开启规则，使用警告级别的错误：warn (不会导致程序退出)
 	// "error" 或 2 - 开启规则，使用错误级别的错误：error (当被触发的时候，程序会退出)
+	// 简单使用 [0|'off','属性'] 复合使用 [0|'off',{类型:属性}]
 	rules: {
 		'import/extensions': [
 			'off',
