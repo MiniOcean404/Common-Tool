@@ -30,11 +30,9 @@ module.exports = {
 		},
 	},
 
-	// 在配置文件里配置插件时，可以使用 plugins 关键字来存放插件名字的列表。插件名称可以省略 eslint-plugin- 前缀 extends以前缀plugin:xx使用
-	plugins: ['vue'],
-
+	// 可以继承别人写好的配置规则
 	extends: [
-		'airbnb-base',
+		'airbnb',
 		'plugin:vue/essential',
 		'plugin:prettier/recommended',
 
@@ -68,6 +66,11 @@ module.exports = {
 			},
 		},
 	},
+
+	// 在配置文件里配置插件时，可以使用 plugins 关键字来存放插件名字的列表。
+	// 插件主要针对的是rule，可以拓展额外的规则
+	// 插件名称可以省略 eslint- plugin - 前缀 extends以前缀plugin: xx使用
+	plugins: ['vue'],
 
 	// 你可以使用注释或配置文件修改你项目中要使用的规则。要改变一个规则设置
 	//  "off" 或 0 - 关闭规则
