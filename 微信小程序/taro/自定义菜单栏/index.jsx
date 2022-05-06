@@ -58,6 +58,7 @@ const WXCustomNavigationBar = (props) => {
 				paddingTop: statusBarHeight, // 状态栏高度
 				paddingRight: leftWidth, // 胶囊按钮左侧到屏幕右侧的边距
 				paddingBottom: navBarExtendHeight, // 导航栏额外高度
+				background,
 			},
 			// 左边按钮样式
 			navBarLeft: back
@@ -75,7 +76,6 @@ const WXCustomNavigationBar = (props) => {
 		<View
 			className={containerClass}
 			style={{
-				background,
 				height: navBarTotalHeight,
 			}}
 		>
