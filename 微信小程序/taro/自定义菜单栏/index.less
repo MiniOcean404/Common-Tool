@@ -1,16 +1,9 @@
 page {
 	//css 原生变量定义 使用:var(变量名)
-	/* prettier-ignore */
-	--right: 97PX; /* 10+87 */
-	/* prettier-ignore */
-	--navBarExtendHeight: 4PX;
-	/* prettier-ignore */
-	--navBarHeight: 68PX;
 	box-sizing: border-box;
 
 	.wx-custom-navigation-bar {
 		.place-holder {
-			height: var(--navBarHeight);
 			position: relative;
 			z-index: 100;
 			visibility: hidden;
@@ -21,17 +14,10 @@ page {
 			top: 0;
 			left: 0;
 			z-index: 1000;
-			/* prettier-ignore */
-			height:  var(--navBarHeight);
 
 			display: flex;
 			align-items: center;
-			padding-right: var(--right);
 			width: 100%;
-			/* prettier-ignore */
-			padding-top: 20PX;
-			/* prettier-ignore */
-			padding-bottom:4PX;
 
 			.nav__left .nav__btn_go-back:active {
 				opacity: 0.5;
@@ -40,12 +26,7 @@ page {
 			//左侧导航
 			.nav__left {
 				position: relative;
-				width: var(--right);
-				/* prettier-ignore */
-				height: 32PX;
-				/*  padding-left: 10PX; */
-				/* prettier-ignore */
-				margin-left:10PX;
+
 				display: flex;
 				align-items: center;
 
