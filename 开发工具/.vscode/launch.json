@@ -6,7 +6,7 @@
   "configurations": [
     // !需要手动切换平台
     {
-      "name": "dev-chrome",
+      "name": "dev",
       "request": "launch", //launch 为启动 attach 为连接 （启动程序使用launch，但是在一个已经启动的项目中就需要attach连接进行调试）
       "cwd": "${workspaceFolder}", // 当前默认工作目录,也就是寻找文件或者以来的路径，默认${workspaceFolder}
       "type": "dart", // 语言类型，不同语言有不同扩展
@@ -17,9 +17,9 @@
       "internalConsoleOptions": "openOnFirstSessionStart", // 选择调试时调试输出的面板是否打开
       "console": "debugConsole", // 只支持调试控制台
       "args": [
-        "run -d chrome", // 运行平台
+        // "run -d chrome", // 运行平台
         "--dart-define",
-        "APP_CHANNEL=Flutter",
+        "CHANNEL=Flutter",
         "--dart-define",
         "ENV=dev"
       ],
@@ -28,7 +28,6 @@
         "program": "${workspaceFolder}\\lib\\main.dart"
       }
     },
-
     {
       "name": "staging-profile",
       "request": "launch",
@@ -36,14 +35,13 @@
       "type": "dart",
       "flutterMode": "profile",
       "program": "${workspaceFolder}/lib/main.dart", // 程序主文件
-      "stopAtEntry": false, // 是否在开始处断点
       "preLaunchTask": "start proxy", // 调试开始前的任务
       "internalConsoleOptions": "openOnFirstSessionStart", // 选择调试时调试输出的面板是否打开
       "console": "debugConsole", // 只支持调试控制台
       "args": [
         "run -d chrome", // 运行平台
         "--dart-define",
-        "APP_CHANNEL=Flutter",
+        "CHANNEL=Flutter",
         "--dart-define",
         "ENV=staging"
       ],
@@ -58,14 +56,13 @@
       "type": "dart",
       "flutterMode": "release",
       "program": "${workspaceFolder}/lib/main.dart", // 程序主文件
-      "stopAtEntry": false, // 是否在开始处断点
       "preLaunchTask": "start proxy", // 调试开始前的任务
       "internalConsoleOptions": "openOnFirstSessionStart", // 选择调试时调试输出的面板是否打开
       "console": "debugConsole", // 只支持调试控制台
       "args": [
         "run -d chrome", // 运行平台
         "--dart-define",
-        "APP_CHANNEL=Flutter",
+        "CHANNEL=Flutter",
         "--dart-define",
         "ENV=prod"
       ],
