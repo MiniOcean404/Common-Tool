@@ -373,7 +373,7 @@ a:active {
   border-radius: 100%;
 }
 
-/*滚动条样式*/
+/* Chrome Safari 滚动条样式*/
 //*::-webkit-scrollbar {
 //	width: 0.5em;
 //	height: 0.5em;
@@ -387,3 +387,15 @@ a:active {
 //	border-radius: 50px;
 //	background-color: rgba(0, 0, 0, 0.3);
 //}
+
+// 火狐滚动条
+html {
+  // 默认 auto 在Windows系统下是17px;
+  // thin 在Windows系统下是8px;
+  // none 宽度为0,但是内容依然可以滚动。
+  scrollbar-width: thin;
+
+  // 默认 auto
+  // 两个值为 滑竿颜色 轨道颜色(鼠标悬浮才显示)
+  scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0);
+}
