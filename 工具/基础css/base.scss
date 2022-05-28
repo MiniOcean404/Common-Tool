@@ -184,6 +184,7 @@ body {
   // 兼容 IE 和 Firefox
   // 100vw相对于浏览器的window.innerWidth，是浏览器的内部宽度，注意，滚动条宽度也计算在内！
   // 而100%是可用宽度，是不含滚动条的宽度。
+  // !仅PC端
   margin-right: calc(100vw - 100%);
 }
 
