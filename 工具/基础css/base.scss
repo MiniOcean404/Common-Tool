@@ -172,6 +172,19 @@ body {
 
   -webkit-font-smoothing: antialiased; // 取消字体抗锯齿
   -moz-osx-font-smoothing: grayscale;
+
+  // 设置默认 锚点滚动 及 scrollIntoView({ behavior: 'smooth' }) 的效果
+  scroll-behavior: smooth;
+
+  // windows 防止界面加载因为滚动条而导致界面晃动，Mac 浏览器滚动条不会占据位置
+  // stable 右边会预留位置
+  // stable both-edges 两边会预留位置
+  scrollbar-gutter: stable;
+
+  // 兼容 IE 和 Firefox
+  // 100vw相对于浏览器的window.innerWidth，是浏览器的内部宽度，注意，滚动条宽度也计算在内！
+  // 而100%是可用宽度，是不含滚动条的宽度。
+  margin-right: calc(100vw - 100%);
 }
 
 img {
