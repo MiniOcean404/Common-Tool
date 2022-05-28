@@ -136,19 +136,23 @@ xmp {
 }
 
 // 张旭鑫推荐 https://www.bilibili.com/video/BV1b54y1Z7pu
+// 自定义字体
 @font-face {
   font-family: Emoji;
+  // Apple Color Emojiji（苹果 Emoji）Segoe UI Symbol（win8.1/10）Segoe UI Symbol（win7/8）Noto Color Emoji（安卓）
   src: local('Apple Color Emojiji'), local('Segoe UI Emoji'),
     local('Segoe UI Symbol'), local('Noto Color Emoji');
+  // 限制Emoji字体作用的字符范围，不限制的话,兜底字符的Unicode范围覆盖了emoji字体
+  //   unicode-range限制了Emoji字体的作用范围，符合该范围则使用Emoji这个font-family
   unicode-range: U+1F000-1F644, U+203C-3299;
 }
 
-// 衬线字体
+// 适合标题的衬线字体
 .font-serif {
   font-family: Georgia, Cambria, 'Times New Roman', Times, serif;
 }
 
-// 等宽字体：
+// 适合代码的等宽字体：
 .font-mono {
   font-family: Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
     monospace;
@@ -162,7 +166,7 @@ body {
   // font-family 必须最后指定
   font: 16px/1.5;
 
-  // 张旭鑫推荐 字体
+  // 张旭鑫推荐 字体 系统字体：system-ui(chrome、safari) —apple-system(firfox)  兜底字体：Segoe UI(window) Arial(旧windows) sans-serif (旧Android) Segoe UI(Android字体) Helvetica(Mac Os iOS)
   font-family: system-ui, —apple-system, Segoe UI, Rototo, Emoji, Helvetica,
     Arial, sans-serif;
 
