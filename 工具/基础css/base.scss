@@ -1,4 +1,3 @@
-@import './normalize.scss';
 //https://juejin.cn/post/7055845836298649636#heading-7
 
 /* 初始化 */
@@ -147,6 +146,11 @@ xmp {
   unicode-range: U+1F000-1F644, U+203C-3299;
 }
 
+@font-face {
+  font-family: Ping fang SC Medium;
+  src: url('../../../assets/font/pingfangsc-medium.otf');
+}
+
 // 适合标题的衬线字体
 .font-serif {
   font-family: Georgia, Cambria, 'Times New Roman', Times, serif;
@@ -160,15 +164,20 @@ xmp {
 
 html,
 body {
+  // electron 无边框窗口拖拽
+  --webkit-app-region: drag;
+  user-select: none;
+
   height: 100%;
   // font-style 是否斜体, font-variant 和 font-weight 必须在 font-size 之前
   // line-height 必须跟在 font-size 后面，由 "/" 分隔，例如 "16px/3"
   // font-family 必须最后指定
-  font: 16px/1.5;
+  font: 16px / 1.5 Ping fang SC Medium, system-ui, —apple-system, Segoe UI, Rototo,
+  Emoji, Helvetica, Arial, sans-serif;
 
-  // 张旭鑫推荐 字体 系统字体：system-ui(chrome、safari) —apple-system(firfox)  兜底字体：Segoe UI(window) Arial(旧windows) sans-serif (旧Android) Segoe UI(Android字体) Helvetica(Mac Os iOS)
-  font-family: system-ui, —apple-system, Segoe UI, Rototo, Emoji, Helvetica,
-    Arial, sans-serif;
+  // 张旭鑫推荐 字体 系统字体：system-ui(chrome、safari) —apple-system(firefox)  兜底字体：Segoe UI(window) Arial(旧windows) sans-serif (旧Android) Segoe UI(Android字体) Helvetica(Mac Os iOS)
+  font-family: Ping fang SC Medium, system-ui, —apple-system, Segoe UI, Rototo,
+    Emoji, Helvetica, Arial, sans-serif;
 
   -webkit-font-smoothing: antialiased; // 取消字体抗锯齿
   -moz-osx-font-smoothing: grayscale;
@@ -179,7 +188,7 @@ body {
   // windows 防止界面加载因为滚动条而导致界面晃动，Mac 浏览器滚动条不会占据位置
   // stable 右边会预留位置
   // stable both-edges 两边会预留位置
-  scrollbar-gutter: stable;
+  // scrollbar-gutter: stable;
 
   // 兼容 IE 和 Firefox
   // 100vw相对于浏览器的window.innerWidth，是浏览器的内部宽度，注意，滚动条宽度也计算在内！
