@@ -83,6 +83,8 @@ const mergeLate = merge(common, {
 			// 	path: resolve('dist', 'dll', 'manifest.json'), //manifest.json的生成路径
 			// }),
 		],
+		// 一个ts文件、图片、less、pug等都是一个module，而打包后的产物，总的称呼就是bundle。
+		// 对于打包产物bundle， 有些情况下，我们觉得太大了。 为了优化性能，比如快速打开首屏，利用缓存等，我们需要对bundle进行以下拆分，对于拆分出来的东西，我们叫它chunk。
 		splitChunks: {
 			chunks: 'all', //将什么类型的代码块用于分割，三选一： "initial"：入口代码块 | "all"：全部 | "async"：按需加载的代码块
 			minSize: 20000, //大小超过30kb的模块才会被提取
