@@ -68,6 +68,9 @@ const mergeLate = merge(common, {
 						conditionals: true,
 						dead_code: true,
 						evaluate: true,
+						drop_console: true, // 生产环境下移除控制台所有的内容
+						drop_debugger: true, // 移除断点
+						pure_funcs: ['console.log'], // 生产环境下移除console
 					},
 					mangle: {
 						safari10: true,
