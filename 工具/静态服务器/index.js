@@ -11,7 +11,7 @@ const options = {
 //创建web服务器
 const app = express()
 //托管静态资源
-app.use(express.static('./web'))
+app.use(express.static('./dist'))
 
 http.createServer(app).listen(80, () => {
   console.log('http服务器-----http://127.0.0.1')

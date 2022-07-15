@@ -113,7 +113,7 @@ const mergeLate = merge(common, {
 				commons: {
 					name: 'chunk-vue-components',
 					test: resolve('src/components'), // 可以自定义您的规则
-					minChunks: 1, //  最小块数
+					minChunks: 1, //  最小块数 （将一个以上的chunk所共享的模块打包至commons组。）
 					priority: 3,
 					reuseExistingChunk: true, //是否复用已经从原代码块中分割出来的模块
 				},
