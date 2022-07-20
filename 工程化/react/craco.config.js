@@ -23,6 +23,9 @@ const DashboardPlugin = require('webpack-dashboard/plugin') // 美化打包分�
 const isBuildAnalyzer = process.env.NODE_ENV === 'production'
 const resolve = (url) => path.join(__dirname, url)
 
+// 获取自定义变量
+// console.log(process.env.CUSTOM)
+
 module.exports = {
   reactScriptsVersion: 'react-scripts',
   // 报错信息：Module not found: You attempted to import ... which falls outside of the project src/ directory. Relative imports outside of src/ are not supported.
