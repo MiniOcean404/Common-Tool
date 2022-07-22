@@ -20,7 +20,6 @@ const CompressionWebpackPlugin = require('compression-webpack-plugin') // 压缩
 const DashboardPlugin = require('webpack-dashboard/plugin') // 美化打包分析界面
 
 // 判断编译环境是否为生产
-const isProd = process.env.NODE_ENV === 'production'
 const isDev = process.env.NODE_ENV === 'development'
 const resolve = (url) => path.join(__dirname, url)
 
@@ -36,7 +35,7 @@ const webpackVariable = {
 
 const isReactRefresh = isDev && true
 
-function devServerConfig() {
+const devServerConfig = () => {
   const config = {
     port: webpackVariable.port,
     host: webpackVariable.host, // 域名
@@ -75,8 +74,9 @@ function devServerConfig() {
     },
   }
 
-  if (!isReactRefresh) {
-    const webpackHot = {
+  return {
+    ...config,
+    ...when(isReactRefresh, () => ({
       hot: true, //开启HMR功能，只重新打包更改的文件,没有 false
       // 监听文件
       watchFiles: {
@@ -86,12 +86,8 @@ function devServerConfig() {
           ignored: '/node_modules/', // 忽略监视的文件
         },
       },
-    }
-
-    return { ...config, ...webpackHot }
+    })),
   }
-
-  return config
 }
 
 module.exports = {
@@ -142,8 +138,7 @@ module.exports = {
       ...when(isReactRefresh, () => [new HotModuleReplacementPlugin()], []),
 
       // 编译产物分析 : https://www.npmjs.com/package/webpack-bundle-analyzer
-      ...when(
-        isProd,
+      ...whenProd(
         () => [
           new BundleAnalyzerPlugin({
             analyzerMode: 'server',
@@ -222,7 +217,11 @@ module.exports = {
     // - 这里选择配置为函数，与直接定义 configure 对象方式互斥；
     configure: (webpackConfig, { env, paths }) => {
       paths.appBuild = 'dist' // public 打包目录
-      webpackConfig.devtool = isDev && 'source-map' // source-map
+
+      whenDev(() => {
+        webpackConfig.devtool = 'source-map'
+      }) // source-map
+
       // 文件输出配置
       webpackConfig.output = {
         ...webpackConfig.output,
@@ -253,7 +252,7 @@ module.exports = {
         },
       ]
 
-      if (!isDev) {
+      whenProd(() => {
         // 打包缓存
         webpackConfig.cache = {
           ...webpackConfig.cache,
@@ -324,7 +323,7 @@ module.exports = {
             },
           },
         }
-      }
+      })
 
       // 返回重写后的新配置
       return webpackConfig
