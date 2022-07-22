@@ -23,9 +23,23 @@ const DashboardPlugin = require('webpack-dashboard/plugin') // 美化打包分�
 const isBuildAnalyzer = process.env.NODE_ENV === 'production'
 const resolve = (url) => path.join(__dirname, url)
 
+// 获取自定义变量
+// console.log(process.env.CUSTOM)
+
 module.exports = {
   reactScriptsVersion: 'react-scripts',
-  plugins: [],
+  // 报错信息：Module not found: You attempted to import ... which falls outside of the project src/ directory. Relative imports outside of src/ are not supported.
+  // 解决办法：禁用 ModuleScopePlugin 插件
+  plugins: [
+    {
+      plugin: {
+        overrideWebpackConfig: ({ webpackConfig, cracoConfig, pluginOptions, context: { env, paths } }) => {
+          webpackConfig.resolve.plugins = webpackConfig.resolve.plugins.filter((p) => p.constructor.name !== 'ModuleScopePlugin')
+          return webpackConfig
+        },
+      },
+    },
+  ],
   devServer: {
     port: 3000,
     static: {
@@ -40,7 +54,7 @@ module.exports = {
         ignored: '/node_modules/', // 忽略监视的文件
       },
     },
-    // host: 'localhost', // 域名
+    host: '0.0.0.0', // 域名
     server: 'http',
     // open: true,
     compress: true, // 启动gzip压缩
@@ -208,8 +222,8 @@ module.exports = {
           test: /\.json$/i, //字体文件
           type: 'asset/resource',
           generator: {
-            // 输出文件位置以及文件名
-            filename: 'static/json/json.[contenthash:8][ext]',
+            // 输出文件位置以及文件名 contenthash:8
+            filename: 'static/json/[name][ext]',
           },
         },
       ]
