@@ -5,7 +5,7 @@
  * - whenProd ☞ process.env.NODE_ENV === 'production'
  */
 const { when, whenDev, whenProd, whenTest, ESLINT_MODES, POSTCSS_MODES } = require('@craco/craco')
-const webpack = require('webpack')
+const { HotModuleReplacementPlugin, IgnorePlugin } = require('webpack')
 const path = require('path')
 
 // 开发环境
@@ -20,48 +20,37 @@ const CompressionWebpackPlugin = require('compression-webpack-plugin') // 压缩
 const DashboardPlugin = require('webpack-dashboard/plugin') // 美化打包分析界面
 
 // 判断编译环境是否为生产
-const isBuildAnalyzer = process.env.NODE_ENV === 'production'
+const isProd = process.env.NODE_ENV === 'production'
+const isDev = process.env.NODE_ENV === 'development'
 const resolve = (url) => path.join(__dirname, url)
 
 // 获取自定义变量
 // console.log(process.env.CUSTOM)
 
-module.exports = {
-  reactScriptsVersion: 'react-scripts',
-  // 报错信息：Module not found: You attempted to import ... which falls outside of the project src/ directory. Relative imports outside of src/ are not supported.
-  // 解决办法：禁用 ModuleScopePlugin 插件
-  plugins: [
-    {
-      plugin: {
-        overrideWebpackConfig: ({ webpackConfig, cracoConfig, pluginOptions, context: { env, paths } }) => {
-          webpackConfig.resolve.plugins = webpackConfig.resolve.plugins.filter((p) => p.constructor.name !== 'ModuleScopePlugin')
-          return webpackConfig
-        },
-      },
-    },
-  ],
-  devServer: {
-    port: 3000,
+const webpackVariable = {
+  port: 3000,
+  host: '0.0.0.0',
+  local: '127.0.0.1',
+  protocol: 'http',
+}
+
+const isReactRefresh = isDev && true
+
+function devServerConfig() {
+  const config = {
+    port: webpackVariable.port,
+    host: webpackVariable.host, // 域名
+    server: webpackVariable.protocol,
+    open: `${webpackVariable.protocol}://${webpackVariable.local}:${webpackVariable.port}`, // ip:http://127.0.0.1:3000 或者 bool
+    compress: true, // 启动gzip压缩
+
+    // 开启支持vue的history模式,需要publicPath设置对（不能不设置，路径不能错误）
+    // 对于history来说 返回的index.html但是是基于请求路径返回的内容,那么publicPath就基于当前请求过来的路径进行js文件请求，所以publicPath要设置为'/'
+    historyApiFallback: true,
     static: {
       // 该配置项允许配置从目录提供静态文展示的选项
       directory: resolve('dist'),
     },
-    // 监听文件
-    watchFiles: {
-      paths: ['src/**/*', 'public/**/*'],
-      options: {
-        usePolling: false, // 是否轮询
-        ignored: '/node_modules/', // 忽略监视的文件
-      },
-    },
-    host: '0.0.0.0', // 域名
-    server: 'http',
-    // open: true,
-    compress: true, // 启动gzip压缩
-    hot: true, //开启HMR功能，只重新打包更改的文件
-    // 开启支持vue的history模式,需要publicPath设置对（不能不设置，路径不能错误）
-    // 对于history来说 返回的index.html但是是基于请求路径返回的内容,那么publicPath就基于当前请求过来的路径进行js文件请求，所以publicPath要设置为'/'
-    historyApiFallback: true,
     // 在浏览器中
     client: {
       progress: true, // 以百分比显示编译进度。
@@ -84,7 +73,42 @@ module.exports = {
         xfwd: false,
       },
     },
-  },
+  }
+
+  if (!isReactRefresh) {
+    const webpackHot = {
+      hot: true, //开启HMR功能，只重新打包更改的文件,没有 false
+      // 监听文件
+      watchFiles: {
+        paths: [('src/**/*', 'public/**/*')],
+        options: {
+          usePolling: false, // 是否轮询
+          ignored: '/node_modules/', // 忽略监视的文件
+        },
+      },
+    }
+
+    return { ...config, ...webpackHot }
+  }
+
+  return config
+}
+
+module.exports = {
+  reactScriptsVersion: 'react-scripts',
+  // 报错信息：Module not found: You attempted to import ... which falls outside of the project src/ directory. Relative imports outside of src/ are not supported.
+  // 解决办法：禁用 ModuleScopePlugin 插件
+  plugins: [
+    {
+      plugin: {
+        overrideWebpackConfig: ({ webpackConfig, cracoConfig, pluginOptions, context: { env, paths } }) => {
+          webpackConfig.resolve.plugins = webpackConfig.resolve.plugins.filter((p) => p.constructor.name !== 'ModuleScopePlugin')
+          return webpackConfig
+        },
+      },
+    },
+  ],
+  devServer: devServerConfig(),
   webpack: {
     // 别名配置
     alias: {
@@ -92,8 +116,6 @@ module.exports = {
       // 此处是一个示例，实际可根据各自需求配置
     },
     plugins: [
-      // 查看打包的进度
-      // new SimpleProgressWebpackPlugin(),
       // webpack构建进度条
       new WebpackBar({
         profile: true,
@@ -110,16 +132,18 @@ module.exports = {
             cwd: process.cwd(),
           }),
           // webpack-dev-server 强化插件
-          new DashboardPlugin(),
-          new webpack.HotModuleReplacementPlugin(),
-
+          // new HotModuleReplacementPlugin(),
           new ReactRefreshWebpackPlugin(),
+
+          new DashboardPlugin(),
         ],
         []
       ),
+      ...when(isReactRefresh, () => [new HotModuleReplacementPlugin()], []),
+
       // 编译产物分析 : https://www.npmjs.com/package/webpack-bundle-analyzer
       ...when(
-        isBuildAnalyzer,
+        isProd,
         () => [
           new BundleAnalyzerPlugin({
             analyzerMode: 'server',
@@ -187,17 +211,18 @@ module.exports = {
         []
       ),
 
-      new webpack.IgnorePlugin({
+      new IgnorePlugin({
         resourceRegExp: /^\.\/locale$/,
         contextRegExp: /moment$/,
       }),
     ],
+
     // 重写 webpack 任意配置
     // - configure 能够重写 webpack 相关的所有配置，但是，仍然推荐你优先阅读 craco 提供的快捷配置，把解决不了的配置放到 configure 里解决；
     // - 这里选择配置为函数，与直接定义 configure 对象方式互斥；
     configure: (webpackConfig, { env, paths }) => {
       paths.appBuild = 'dist' // public 打包目录
-      webpackConfig.devtool = env === 'development' && 'source-map' // source-map
+      webpackConfig.devtool = isDev && 'source-map' // source-map
       // 文件输出配置
       webpackConfig.output = {
         ...webpackConfig.output,
@@ -228,7 +253,7 @@ module.exports = {
         },
       ]
 
-      if (env === 'production') {
+      if (!isDev) {
         // 打包缓存
         webpackConfig.cache = {
           ...webpackConfig.cache,
