@@ -21,6 +21,7 @@ const DashboardPlugin = require('webpack-dashboard/plugin') // 美化打包分�
 
 // 判断编译环境是否为生产
 const isDev = process.env.NODE_ENV === 'development'
+const isProd = process.env.NODE_ENV === 'production'
 const resolve = (url) => path.join(__dirname, url)
 
 // 获取自定义变量
@@ -34,6 +35,7 @@ const webpackVariable = {
 }
 
 const isReactRefresh = isDev && true
+const isNeedBundleAnalyzer = isProd && false
 
 const devServerConfig = (devServerConfig, { env, paths, proxy, allowedHost }) => {
   const config = {
@@ -152,7 +154,8 @@ module.exports = function ({ env }) {
         ...when(isReactRefresh, () => [new HotModuleReplacementPlugin()], []),
 
         // 编译产物分析 : https://www.npmjs.com/package/webpack-bundle-analyzer
-        ...whenProd(
+        ...when(
+          isNeedBundleAnalyzer,
           () => [
             new BundleAnalyzerPlugin({
               analyzerMode: 'server',
@@ -349,6 +352,9 @@ module.exports = function ({ env }) {
       loaderOptions: (babelLoaderOptions, { env, paths }) => {
         return babelLoaderOptions
       },
+    },
+    eslint: {
+      enable: isDev,
     },
   }
 }
